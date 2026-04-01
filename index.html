@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시도교육청 본청 부서 기능 분류 대시보드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--surface3:#21262d;
+  --border:#30363d;--text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
+  --accent:#58a6ff;--accent2:#3fb950;--accent3:#f78166;
+  --blue1:#1f6feb;--blue2:#388bfd;--blue3:#79c0ff;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif}
+/* ── 상단 헤더 ── */
+header{padding:24px 32px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-bottom:16px}
+.hd-title{font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.3px}
+.hd-sub{font-size:12px;color:var(--text2);margin-top:3px}
+.hd-badge{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--surface3);border:1px solid var(--border);color:var(--text2)}
+/* ── 탭 ── */
+.tabs{display:flex;gap:0;padding:0 32px;border-bottom:1px solid var(--border);background:var(--surface)}
+.tab{padding:12px 20px;font-size:13px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+/* ── 컨트롤 바 ── */
+.ctrl{display:flex;align-items:center;gap:12px;padding:14px 32px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.ctrl label{font-size:12px;color:var(--text2)}
+select{font-size:12px;padding:5px 10px;background:var(--surface3);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;outline:none}
+select:hover{border-color:var(--accent)}
+.stat{font-size:12px;color:var(--text2);margin-left:8px}
+.stat strong{color:var(--text);font-weight:500}
+/* ── 메인 ── */
+main{padding:20px 32px 32px;max-width:1400px}
+.section{display:none}
+.section.active{display:block}
+/* 트리맵 */
+#tm-wrap{position:relative;width:100%;height:560px;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+canvas{display:block}
+/* 히트맵 */
+#hm-scroll{width:100%;overflow:auto;max-height:640px;border:1px solid var(--border);border-radius:8px}
+table{border-collapse:collapse;font-size:11px;white-space:nowrap}
+th,td{padding:4px 6px;border:1px solid var(--border)}
+th{position:sticky;background:var(--surface2);font-weight:500;font-size:11px;color:var(--text2);z-index:2}
+th.corner{top:0;left:0;z-index:3;min-width:150px;text-align:left;color:var(--text)}
+th.yr{top:0;text-align:center;min-width:40px}
+th.dept{left:0;text-align:left;min-width:150px;font-weight:400;color:var(--text)}
+td.cell{text-align:center;font-size:10px;font-weight:500;min-width:40px;cursor:default;color:#fff;transition:opacity .15s}
+td.cell:hover{opacity:.8}
+.hm-ctrl{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.hm-leg{display:flex;align-items:center;gap:5px;margin-top:10px;font-size:11px;color:var(--text2)}
+.lsq{width:13px;height:13px;border-radius:2px;display:inline-block}
+/* 막대차트 */
+#bar-wrap{position:relative;width:100%}
+/* 공통 툴팁 */
+.tip{position:fixed;display:none;pointer-events:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text);z-index:100;max-width:220px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.tip-name{font-weight:500;font-size:13px;margin-bottom:2px;color:var(--text)}
+.tip-val{color:var(--text2)}
+/* 빈도1 박스 */
+.excl-box{border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:16px;background:var(--surface)}
+.excl-title{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px}
+.excl-tags{display:flex;flex-wrap:wrap;gap:4px}
+.etag{font-size:11px;padding:2px 8px;border-radius:4px;background:var(--surface3);color:var(--text2);border:1px solid var(--border)}
+/* 섹션 제목 */
+.sec-label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:18px 0 8px}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="hd-title">시도교육청 본청 부서 기능 분류 대시보드</div>
+    <div class="hd-sub">2010–2025년 · 17개 시도 · 52개 대표명칭 기준</div>
+  </div>
+  <span class="hd-badge">v5 법정사무+공존원칙 기반</span>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-tab="v1">버전 1 — 원본 전체</div>
+  <div class="tab" data-tab="v2">버전 2 — 빈도 2 이상</div>
+</div>
+
+<!-- ══════════════════ 버전 1 ══════════════════ -->
+<div id="sec-v1" class="section active">
+  <!-- 트리맵 -->
+  <div class="ctrl">
+    <label>연도</label>
+    <select id="tm-sel"></select>
+    <div class="stat" id="tm-stat"></div>
+  </div>
+  <main>
+    <div class="sec-label">트리맵</div>
+    <div id="tm-wrap"><canvas id="tm-cv"></canvas></div>
+    <div class="sec-label" style="margin-top:18px">히트맵</div>
+    <div class="hm-ctrl">
+      <label style="font-size:12px;color:var(--text2)">정렬</label>
+      <select id="hm-sort">
+        <option value="total">전체 합계 순</option>
+        <option value="2025">2025년 기준</option>
+        <option value="2010">2010년 기준</option>
+        <option value="name">가나다 순</option>
+      </select>
+      <label style="font-size:12px;color:var(--text2)">필터</label>
+      <select id="hm-filt">
+        <option value="all">전체</option>
+        <option value="2plus">2개 이상만</option>
+      </select>
+    </div>
+    <div id="hm-scroll"><table id="hm-tbl"></table></div>
+    <div class="hm-leg">
+      <span>설치 수</span>
+      <span class="lsq" style="background:#1e3a5f"></span>1
+      <span class="lsq" style="background:#1f4e79"></span>3
+      <span class="lsq" style="background:#1f6feb"></span>6
+      <span class="lsq" style="background:#388bfd"></span>10
+      <span class="lsq" style="background:#79c0ff"></span>15+
+      <span style="margin-left:8px">· 빈 칸 = 미설치</span>
+    </div>
+    <div class="sec-label" style="margin-top:18px">막대차트</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+      <label style="font-size:12px;color:var(--text2)">연도</label>
+      <select id="bar-sel"></select>
+      <label style="font-size:12px;color:var(--text2)">상위</label>
+      <select id="bar-topn">
+        <option value="15">15개</option>
+        <option value="20" selected>20개</option>
+        <option value="30">30개</option>
+        <option value="all">전체</option>
+      </select>
+    </div>
+    <div id="bar-wrap"><canvas id="bar-cv"></canvas></div>
+  </main>
+</div>
+
+<!-- ══════════════════ 버전 2 ══════════════════ -->
+<div id="sec-v2" class="section">
+  <div class="ctrl">
+    <label>연도</label>
+    <select id="d-sel"></select>
+    <div class="stat" id="d-stat"></div>
+  </div>
+  <main>
+    <div class="excl-box">
+      <div class="excl-title" id="excl-title"></div>
+      <div class="excl-tags" id="excl-tags"></div>
+    </div>
+    <div class="sec-label">트리맵 — 2개 이상 시·도교육청 설치 기능</div>
+    <div id="tm2-wrap" style="position:relative;width:100%;height:500px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
+      <canvas id="tm2-cv"></canvas>
+      <div class="tip" id="tm2-tip"><div class="tip-name"></div><div class="tip-val"></div></div>
+    </div>
+    <div class="sec-label" style="margin-top:18px">히트맵 — 연도별 기능 설치 현황 (2개 이상)</div>
+    <div id="hm2-scroll" style="width:100%;overflow:auto;max-height:580px;border:1px solid var(--border);border-radius:8px">
+      <table id="hm2-tbl"></table>
+    </div>
+    <div class="hm-leg" style="margin-top:8px;margin-bottom:18px">
+      <span>설치 수</span>
+      <span class="lsq" style="background:#1e3a5f"></span>2
+      <span class="lsq" style="background:#1f6feb"></span>6
+      <span class="lsq" style="background:#388bfd"></span>10
+      <span class="lsq" style="background:#58a6ff"></span>13
+      <span class="lsq" style="background:#79c0ff"></span>16+
+    </div>
+    <div class="sec-label">막대차트 — 해당 연도 설치 순위 (2개 이상)</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+      <label style="font-size:12px;color:var(--text2)">표시</label>
+      <select id="d-bsort">
+        <option value="20">상위 20개</option>
+        <option value="30">상위 30개</option>
+        <option value="all">전체</option>
+      </select>
+    </div>
+    <div id="dbar-wrap"><canvas id="dbar-cv"></canvas></div>
+  </main>
+</div>
+
+<!-- 공통 툴팁 -->
+<div class="tip" id="tm-tip"><div class="tip-name"></div><div class="tip-val"></div></div>
+<div class="tip" id="hm-tip"></div>
+<div class="tip" id="hm2-tip"></div>
+<div class="tip" id="bar-tip"></div>
+
+<script>
+const DATA={"2010":{"정책기획과":14,"총무과":15,"시설과":7,"감사관":12,"공보담당관":3,"행정과":3,"재무과":4,"체육건강과":2,"교원인사과":6,"학생생활인권과":2,"학교혁신과":8,"안전총괄과":0,"초등교육과":2,"중등교육과":2,"학교설립과":4,"미래인재과":6,"진로직업교육과":4,"예산과":1,"평생교육과":8,"민주시민교육과":0,"교육복지과":1,"교육과정과":2,"노사협력과":0,"유아교육과":1,"재정과":2,"학교지원과":2,"교수학습지원과":2,"미래학교추진단":0,"대외협력과":0,"창의인재교육과":1,"사립학교지원과":2,"교원역량개발과":1,"AI융합교육과":0,"교육정보화과":1,"지역교육협력과":0,"장학지원과":2,"학생건강과":1,"학생학부모지원과":1,"특수교육과":0,"방과후교육과":1,"도서관정책과":0,"국제교육협력과":0,"기후환경교육추진단":0,"교육자치과":0,"유보통합준비단":0,"유보통합추진단":0,"민자시설사업단":2,"안산교육회복지원단":0,"대구경북교육통합추진단":0,"더나은교육추진단":0,"지역간교육격차해소추진담당관":0,"청사이전추진단":0},"2011":{"정책기획과":12,"총무과":13,"시설과":6,"감사관":11,"공보담당관":3,"행정과":4,"재무과":3,"체육건강과":4,"교원인사과":6,"학생생활인권과":2,"학교혁신과":6,"안전총괄과":0,"초등교육과":0,"중등교육과":0,"학교설립과":3,"미래인재과":4,"진로직업교육과":2,"예산과":2,"평생교육과":5,"민주시민교육과":0,"교육복지과":2,"교육과정과":4,"노사협력과":0,"유아교육과":0,"재정과":2,"학교지원과":3,"교수학습지원과":2,"미래학교추진단":0,"대외협력과":0,"창의인재교육과":1,"사립학교지원과":1,"교원역량개발과":1,"AI융합교육과":0,"교육정보화과":0,"지역교육협력과":0,"장학지원과":1,"학생건강과":0,"학생학부모지원과":1,"특수교육과":0,"방과후교육과":2,"도서관정책과":0,"국제교육협력과":0,"기후환경교육추진단":0,"교육자치과":0,"유보통합준비단":0,"유보통합추진단":0,"민자시설사업단":2,"안산교육회복지원단":0,"대구경북교육통합추진단":0,"더나은교육추진단":0,"지역간교육격차해소추진담당관":0,"청사이전추진단":0},"2012":{"정책기획과":17,"총무과":16,"시설과":7,"감사관":16,"공보담당관":3,"행정과":6,"재무과":4,"체육건강과":4,"교원인사과":4,"학생생활인권과":4,"학교혁신과":8,"안전총괄과":0,"초등교육과":0,"중등교육과":0,"학교설립과":5,"미래인재과":3,"진로직업교육과":3,"예산과":3,"평생교육과":5,"민주시민교육과":0,"교육복지과":2,"교육과정과":5,"노사협력과":0,"유아교육과":0,"재정과":3,"학교지원과":3,"교수학습지원과":3,"미래학교추진단":0,"대외협력과":1,"창의인재교육과":1,"사립학교지원과":2,"교원역량개발과":1,"AI융합교육과":0,"교육정보화과":0,"지역교육협력과":0,"장학지원과":1,"학생건강과":0,"학생학부모지원과":1,"특수교육과":0,"방과후교육과":2,"도서관정책과":0,"국제교육협력과":0,"기후환경교육추진단":0,"교육자치과":0,"유보통합준비단":0,"유보통합추진단":0,"민자시설사업단":2,"안산교육회복지원단":0,"대구경북교육통합추진단":0,"더나은교육추진단":0,"지역간교육격차해소추진담당관":0,"청사이전추진단":0},"2013":{"정책기획과":18,"총무과":17,"시설과":8,"감사관":15,"공보담당관":5,"행정과":6,"재무과":4,"체육건강과":4,"교원인사과":5,"학생생활인권과":5,"학교혁신과":10,"안전총괄과":0,"초등교육과":3,"중등교육과":3,"학교설립과":6,"미래인재과":3,"진로직업교육과":4,"예산과":4,"평생교육과":5,"민주시민교육과":1,"교육복지과":2,"교육과정과":4,"노사협력과":0,"유아교육과":1,"재정과":2,"학교지원과":3,"교수학습지원과":2,"미래학교추진단":0,"대외협력과":1,"창의인재교육과":1,"사립학교지원과":2,"교원역량개발과":1,"AI융합교육과":0,"교육정보화과":1,"지역교육협력과":1,"장학지원과":1,"학생건강과":0,"학생학부모지원과":1,"특수교육과":0,"방과후교육과":2,"도서관정책과":0,"국제교육협력과":0,"기후환경교육추진단":0,"교육자치과":0,"유보통합준비단":0,"유보통합추진단":0,"민자시설사업단":2,"안산교육회복지원단":0,"대구경북교육통합추진단":0,"더나은교육추진단":0,"지역간교육격차해소추진담당관":0,"청사이전추진단":0},"2014":{"정책기획과":18,"총무과":16,"시설과":8,"감사관":15,"공보담당관":6,"행정과":6,"재무과":4,"체육건강과":5,"교원인사과":6,"학생생활인권과":5,"학교혁신과":9,"안전총괄과":3,"초등교육과":5,"중등교육과":5,"학교설립과":6,"미래인재과":2,"진로직업교육과":5,"예산과":4,"평생교육과":4,"민주시민교육과":1,"교육복지과":2,"교육과정과":5,"노사협력과":0,"유아교육과":2,"재정과":2,"학교지원과":2,"교수학습지원과":1,"미래학교추진단":0,"대외협력과":1,"창의인재교육과":2,"사립학교지원과":2,"교원역량개발과":1,"AI융합교육과":0,"교육정보화과":1,"지역교육협력과":0,"장학지원과":1,"학생건강과":0,"학생학부모지원과":2,"특수교육과":0,"방과후교육과":2,"도서관정책과":0,"국제교육협력과":0,"기후환경교육추진단":0,"교육자치과":1,"유보통합준비단":0,"유보통합추진단":0,"민자시설사업단":2,"안산교육회복지원단":7,"대구경북교육통합추진단":0,"더나은교육추진단":0,"지역간교육격차해소추진담당관":0,"청사이전추진단":0},"2015":{"정책기획과":17,"총무과":15,"시설과":7,"감사관":15,"공보담당관":5,"행정과":5,"재무과":4,"체육건강과":3,"교원인사과":8,"학생생활인권과":5,"학교혁신과":8,"안전총괄과":2,"초등교육과":5,"중등교육과":7,"학교설립과":5,"미래인재과":3,"진로직업교육과":5,"예산과":2,"평생교육과":3,"민주시민교육과":2,"교육복지과":2,"교육과정과":2,"노사협력과":0,"유아교육과":2,"재정과":2,"학교지원과":4,"교수학습지원과":1,"미래학교추진단":0,"대외협력과":2,"창의인재교육과":3,"사립학교지원과":1,"교원역량개발과":1,"AI융합교육과":0,"교육정보화과":1,"지역교육협력과":1,"장학지원과":1,"학생건강과":1,"학생학부모지원과":2,"특수교육과":1,"방과후교육과":2,"도서관정책과":1,"국제교육협력과":1,"기후환경교육추진단":0,"교육자치과":1,"유보통합준비단":0,"유보통합추진단":0,"민자시설사업단":0,"안산교육회복지원단":7,"대구경북교육통합추진단":0,"더나은교육추진단":0,"지역간교육격차해소추진담당관":0,"청사이전추진단":0},"2016":{"정책기획과":19,"총무과":17,"시설과":10,"감사관":16,"공보담당관":5,"행정과":9,"재무과":5,"체육건강과":4,"교원인사과":10,"학생생활인권과":7,"학교혁신과":10,"안전총괄과":2,"초등교육과":3,"중등교육과":6,"학교설립과":5,"미래인재과":3,"진로직업교육과":5,"예산과":3,"평생교육과":4,"민주시민교육과":2,"교육복지과":4,"교육과정과":3,"노사협력과":0,"유아교육과":2,"재정과":3,"학교지원과":4,"교수학습지원과":1,"미래학교추진단":0,"대외협력과":2,"창의인재교육과":4,"사립학교지원과":1,"교원역량개발과":1,"AI융합교육과":0,"교육정보화과":2,"지역교육협력과":1,"장학지원과":1,"학생건강과":1,"학생학부모지원과":2,"특수교육과":1,"방과후교육과":2,"도서관정책과":1,"국제교육협력과":1,"기후환경교육추진단":0,"교육자치과":1,"유보통합준비단":0,"유보통합추진단":0,"민자시설사업단":0,"안산교육회복지원단":7,"대구경북교육통합추진단":0,"더나은교육추진단":0,"지역간교육격차해소추진담당관":0,"청사이전추진단":0},"2017":{"정책기획과":19,"총무과":14,"시설과":7,"감사관":14,"공보담당관":5,"행정과":7,"재무과":4,"체육건강과":4,"교원인사과":8,"학생생활인권과":6,"학교혁신과":8,"안전총괄과":2,"초등교육과":3,"중등교육과":6,"학교설립과":5,"미래인재과":4,"진로직업교육과":4,"예산과":2,"평생교육과":3,"민주시민교육과":2,"교육복지과":4,"교육과정과":4,"노사협력과":1,"유아교육과":2,"재정과":3,"학교지원과":4,"교수학습지원과":1,"미래학교추진단":0,"대외협력과":2,"창의인재교육과":3,"사립학교지원과":1,"교원역량개발과":1,"AI융합교육과":0,"교육정보화과":2,"지역교육협력과":1,"장학지원과":1,"학생건강과":1,"학생학부모지원과":1,"특수교육과":1,"방과후교육과":1,"도서관정책과":1,"국제교육협력과":1,"기후환경교육추진단":0,"교육자치과":2,"유보통합준비단":0,"유보통합추진단":0,"민자시설사업단":0,"안산교육회복지원단":7,"대구경북교육통합추진단":0,"더나은교육추진단":0,"지역간교육격차해소추진담당관":0,"청사이전추진단":0},"2018":{"정책기획과":19,"총무과":14,"시설과":8,"감사관":12,"공보담당관":3,"행정과":7,"재무과":4,"체육건강과":4,"교원인사과":6,"학생생활인권과":7,"학교혁신과":8,"안전총괄과":1,"초등교육과":4,"중등교육과":6,"학교설립과":5,"미래인재과":2,"진로직업교육과":4,"예산과":1,"평생교육과":3,"민주시민교육과":3,"교육복지과":5,"교육과정과":3,"노사협력과":2,"유아교육과":2,"재정과":3,"학교지원과":6,"교수학습지원과":1,"미래학교추진단":0,"대외협력과":2,"창의인재교육과":3,"사립학교지원과":1,"교원역량개발과":1,"AI융합교육과":0,"교육정보화과":2,"지역교육협력과":1,"장학지원과":1,"학생건강과":1,"학생학부모지원과":1,"특수교육과":1,"방과후교육과":1,"도서관정책과":0,"국제교육협력과":1,"기후환경교육추진단":0,"교육자치과":2,"유보통합준비단":0,"유보통합추진단":0,"민자시설사업단":0,"안산교육회복지원단":7,"대구경북교육통합추진단":0,"더나은교육추진단":0,"지역간교육격차해소추진담당관":0,"청사이전추진단":0},"2019":{"정책기획과":21,"총무과":16,"시설과":10,"감사관":16,"공보담당관":3,"행정과":8,"재무과":4,"체육건강과":4,"교원인사과":9,"학생생활인권과":9,"학교혁신과":9,"안전총괄과":2,"초등교육과":4,"중등교육과":8,"학교설립과":8,"미래인재과":4,"진로직업교육과":4,"예산과":4,"평생교육과":3,"민주시민교육과":7,"교육복지과":4,"교육과정과":5,"노사협력과":3,"유아교육과":3,"재정과":3,"학교지원과":5,"교수학습지원과":2,"미래학교추진단":0,"대외협력과":2,"창의인재교육과":3,"사립학교지원과":1,"교원역량개발과":1,"AI융합교육과":0,"교육정보화과":2,"지역교육협력과":4,"장학지원과":1,"학생건강과":2,"학생학부모지원과":2,"특수교육과":1,"방과후교육과":1,"도서관정책과":1,"국제교육협력과":1,"기후환경교육추진단":0,"교육자치과":2,"유보통합준비단":0,"유보통합추진단":0,"민자시설사업단":0,"안산교육회복지원단":7,"대구경북교육통합추진단":0,"더나은교육추진단":0,"지역간교육격차해소추진담당관":0,"청사이전추진단":0},"2020":{"정책기획과":19,"총무과":14,"시설과":10,"감사관":16,"공보담당관":3,"행정과":7,"재무과":3,"체육건강과":3,"교원인사과":6,"학생생활인권과":7,"학교혁신과":8,"안전총괄과":4,"초등교육과":5,"중등교육과":10,"학교설립과":8,"미래인재과":4,"진로직업교육과":3,"예산과":5,"평생교육과":3,"민주시민교육과":11,"교육복지과":3,"교육과정과":3,"노사협력과":5,"유아교육과":2,"재정과":3,"학교지원과":4,"교수학습지원과":2,"미래학교추진단":0,"대외협력과":2,"창의인재교육과":2,"사립학교지원과":1,"교원역량개발과":1,"AI융합교육과":0,"교육정보화과":2,"지역교육협력과":3,"장학지원과":1,"학생건강과":2,"학생학부모지원과":2,"특수교육과":1,"방과후교육과":1,"도서관정책과":1,"국제교육협력과":1,"기후환경교육추진단":0,"교육자치과":2,"유보통합준비단":0,"유보통합추진단":0,"민자시설사업단":0,"안산교육회복지원단":0,"대구경북교육통합추진단":0,"더나은교육추진단":1,"지역간교육격차해소추진담당관":0,"청사이전추진단":0},"2021":{"정책기획과":21,"총무과":16,"시설과":10,"감사관":17,"공보담당관":3,"행정과":7,"재무과":3,"체육건강과":3,"교원인사과":6,"학생생활인권과":8,"학교혁신과":9,"안전총괄과":5,"초등교육과":6,"중등교육과":11,"학교설립과":7,"미래인재과":4,"진로직업교육과":2,"예산과":5,"평생교육과":3,"민주시민교육과":10,"교육복지과":4,"교육과정과":3,"노사협력과":5,"유아교육과":2,"재정과":4,"학교지원과":5,"교수학습지원과":1,"미래학교추진단":4,"대외협력과":3,"창의인재교육과":2,"사립학교지원과":1,"교원역량개발과":1,"AI융합교육과":0,"교육정보화과":2,"지역교육협력과":3,"장학지원과":1,"학생건강과":1,"학생학부모지원과":2,"특수교육과":1,"방과후교육과":1,"도서관정책과":1,"국제교육협력과":1,"기후환경교육추진단":1,"교육자치과":2,"유보통합준비단":0,"유보통합추진단":0,"민자시설사업단":0,"안산교육회복지원단":0,"대구경북교육통합추진단":0,"더나은교육추진단":1,"지역간교육격차해소추진담당관":0,"청사이전추진단":0},"2022":{"정책기획과":21,"총무과":14,"시설과":8,"감사관":16,"공보담당관":3,"행정과":6,"재무과":3,"체육건강과":4,"교원인사과":5,"학생생활인권과":8,"학교혁신과":9,"안전총괄과":6,"초등교육과":6,"중등교육과":11,"학교설립과":6,"미래인재과":3,"진로직업교육과":2,"예산과":4,"평생교육과":3,"민주시민교육과":8,"교육복지과":4,"교육과정과":3,"노사협력과":5,"유아교육과":2,"재정과":4,"학교지원과":4,"교수학습지원과":1,"미래학교추진단":7,"대외협력과":3,"창의인재교육과":2,"사립학교지원과":2,"교원역량개발과":1,"AI융합교육과":0,"교육정보화과":2,"지역교육협력과":4,"장학지원과":2,"학생건강과":1,"학생학부모지원과":2,"특수교육과":2,"방과후교육과":1,"도서관정책과":1,"국제교육협력과":1,"기후환경교육추진단":1,"교육자치과":2,"유보통합준비단":0,"유보통합추진단":0,"민자시설사업단":0,"안산교육회복지원단":0,"대구경북교육통합추진단":0,"더나은교육추진단":0,"지역간교육격차해소추진담당관":0,"청사이전추진단":0},"2023":{"정책기획과":22,"총무과":15,"시설과":8,"감사관":17,"공보담당관":3,"행정과":7,"재무과":3,"체육건강과":5,"교원인사과":5,"학생생활인권과":9,"학교혁신과":8,"안전총괄과":5,"초등교육과":6,"중등교육과":13,"학교설립과":7,"미래인재과":3,"진로직업교육과":3,"예산과":5,"평생교육과":2,"민주시민교육과":6,"교육복지과":5,"교육과정과":2,"노사협력과":5,"유아교육과":2,"재정과":4,"학교지원과":4,"교수학습지원과":1,"미래학교추진단":7,"대외협력과":2,"창의인재교육과":1,"사립학교지원과":2,"교원역량개발과":1,"AI융합교육과":1,"교육정보화과":2,"지역교육협력과":4,"장학지원과":2,"학생건강과":1,"학생학부모지원과":2,"특수교육과":2,"방과후교육과":1,"도서관정책과":1,"국제교육협력과":2,"기후환경교육추진단":1,"교육자치과":1,"유보통합준비단":0,"유보통합추진단":0,"민자시설사업단":0,"안산교육회복지원단":0,"대구경북교육통합추진단":0,"더나은교육추진단":0,"지역간교육격차해소추진담당관":1,"청사이전추진단":1},"2024":{"정책기획과":21,"총무과":14,"시설과":8,"감사관":16,"공보담당관":4,"행정과":6,"재무과":3,"체육건강과":4,"교원인사과":6,"학생생활인권과":9,"학교혁신과":8,"안전총괄과":5,"초등교육과":6,"중등교육과":14,"학교설립과":7,"미래인재과":3,"진로직업교육과":3,"예산과":4,"평생교육과":2,"민주시민교육과":4,"교육복지과":4,"교육과정과":1,"노사협력과":5,"유아교육과":3,"재정과":3,"학교지원과":4,"교수학습지원과":2,"미래학교추진단":8,"대외협력과":3,"창의인재교육과":1,"사립학교지원과":2,"교원역량개발과":1,"AI융합교육과":2,"교육정보화과":2,"지역교육협력과":3,"장학지원과":1,"학생건강과":1,"학생학부모지원과":2,"특수교육과":2,"방과후교육과":1,"도서관정책과":0,"국제교육협력과":2,"기후환경교육추진단":1,"교육자치과":1,"유보통합준비단":1,"유보통합추진단":2,"민자시설사업단":0,"안산교육회복지원단":0,"대구경북교육통합추진단":0,"더나은교육추진단":0,"지역간교육격차해소추진담당관":1,"청사이전추진단":1},"2025":{"정책기획과":22,"총무과":15,"시설과":8,"감사관":17,"공보담당관":4,"행정과":7,"재무과":3,"체육건강과":4,"교원인사과":5,"학생생활인권과":10,"학교혁신과":7,"안전총괄과":5,"초등교육과":9,"중등교육과":16,"학교설립과":7,"미래인재과":3,"진로직업교육과":3,"예산과":5,"평생교육과":2,"민주시민교육과":6,"교육복지과":3,"교육과정과":1,"노사협력과":5,"유아교육과":3,"재정과":3,"학교지원과":4,"교수학습지원과":1,"미래학교추진단":5,"대외협력과":2,"창의인재교육과":1,"사립학교지원과":2,"교원역량개발과":1,"AI융합교육과":2,"교육정보화과":1,"지역교육협력과":4,"장학지원과":1,"학생건강과":1,"학생학부모지원과":2,"특수교육과":2,"방과후교육과":1,"도서관정책과":1,"국제교육협력과":2,"기후환경교육추진단":1,"교육자치과":1,"유보통합준비단":1,"유보통합추진단":2,"민자시설사업단":0,"안산교육회복지원단":0,"대구경북교육통합추진단":1,"더나은교육추진단":0,"지역간교육격차해소추진담당관":0,"청사이전추진단":0}};
+
+const YEARS=Object.keys(DATA).sort();
+const PAL=['#1f6feb','#2ea043','#cf222e','#8250df','#bf8700','#953800','#0969da','#24292f','#388bfd','#3fb950','#d4232b','#a371f7','#e3b341','#fb8f44','#79c0ff','#56d364','#ff7b72','#d2a8ff','#ffa657','#58a6ff'];
+function nc(n){let h=0;for(let i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))&0xffff;return PAL[h%PAL.length]}
+function hexRgb(h){return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]}
+function lighten(h,t){const[r,g,b]=hexRgb(h);return`rgb(${Math.round(r+(255-r)*t)},${Math.round(g+(255-g)*t)},${Math.round(b+(255-b)*t)})`}
+function mkrgba(h,a){const[r,g,b]=hexRgb(h);return`rgba(${r},${g},${b},${a})`}
+
+function cellColor(v){
+  if(!v||v===0)return'';
+  const stops=['#1e3a5f','#1a4a6e','#1f4e79','#155e8c','#1f6feb','#2d7ff0','#388bfd','#58a6ff','#79c0ff'];
+  return v<=1?stops[0]:v<=2?stops[1]:v<=3?stops[2]:v<=5?stops[3]:v<=7?stops[4]:v<=9?stops[5]:v<=11?stops[6]:v<=14?stops[7]:stops[8];
+}
+
+// 년도 셀렉트 채우기
+['tm-sel','bar-sel','d-sel'].forEach(id=>{
+  const el=document.getElementById(id);
+  YEARS.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y+'년';el.appendChild(o)});
+  el.value='2025';
+});
+
+// 탭 전환
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    const tab=t.dataset.tab;
+    document.getElementById('sec-v1').classList.toggle('active',tab==='v1');
+    document.getElementById('sec-v2').classList.toggle('active',tab==='v2');
+  });
+});
+
+// ── 스쿼리파이 ──
+function squarify(items,x,y,w,h){
+  const rects=[];
+  function lay(its,x,y,w,h){
+    if(!its.length)return;
+    if(its.length===1){rects.push({...its[0],x,y,w,h});return}
+    const tot=its.reduce((s,i)=>s+i.v,0);
+    let best=Infinity,sp=1;
+    for(let i=1;i<its.length;i++){
+      const a=its.slice(0,i).reduce((s,x)=>s+x.v,0)/tot,b=1-a;
+      const r1=w>=h?Math.max(a*w/h,h/(a*w)):Math.max(h*a/w,w/(h*a));
+      const r2=w>=h?Math.max(b*w/h,h/(b*w)):Math.max(h*b/w,w/(h*b));
+      if(Math.max(r1,r2)<best){best=Math.max(r1,r2);sp=i}
+    }
+    const aIt=its.slice(0,sp),bIt=its.slice(sp);
+    const aS=aIt.reduce((s,x)=>s+x.v,0)/tot;
+    if(w>=h){lay(aIt,x,y,w*aS,h);lay(bIt,x+w*aS,y,w*(1-aS),h)}
+    else{lay(aIt,x,y,w,h*aS);lay(bIt,x,y+h*aS,w,h*(1-aS))}
+  }
+  lay(items,x,y,w,h);return rects;
+}
+
+// ── 트리맵 공통 ──
+function drawTreemap(cvId,wrapId,tipId,year,minVal=0){
+  const wrap=document.getElementById(wrapId),cv=document.getElementById(cvId);
+  const tip=document.getElementById(tipId);
+  const dpr=window.devicePixelRatio||1;
+  const cw=wrap.clientWidth,ch=wrap.clientHeight;
+  cv.width=cw*dpr;cv.height=ch*dpr;
+  cv.style.width=cw+'px';cv.style.height=ch+'px';
+  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+  const raw=DATA[year];
+  const items=Object.entries(raw).filter(([,v])=>v>minVal).map(([n,v])=>({n,v})).sort((a,b)=>b.v-a.v);
+  const maxV=items[0]?.v||1;
+  const p=2;
+  const rects=squarify(items,p,p,cw-p*2,ch-p*2)||[];
+  let cells=[];
+  rects.forEach(r=>{
+    const col=nc(r.n);
+    const t=1-(r.v/maxV)*0.6;
+    ctx.fillStyle=lighten(col,Math.max(0,Math.min(0.7,t)));
+    ctx.beginPath();ctx.roundRect(r.x,r.y,r.w,r.h,3);ctx.fill();
+    ctx.strokeStyle=mkrgba(col,0.25);ctx.lineWidth=0.5;ctx.stroke();
+    cells.push({...r,col});
+    const pad=5,aw=r.w-pad*2,ah=r.h-pad*2;
+    if(aw<12||ah<12)return;
+    let fs=null;
+    for(let s=Math.min(12,Math.floor(ah*0.45));s>=8;s--){
+      ctx.font=`500 ${s}px 'Noto Sans KR',sans-serif`;
+      if(ctx.measureText(r.n).width<=aw){fs=s;break}
+    }
+    if(fs!==null){
+      const showCnt=r.v>1&&ah>=fs*2.8;
+      const cy=r.y+r.h/2;
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.font=`500 ${fs}px 'Noto Sans KR',sans-serif`;
+      ctx.fillStyle='rgba(255,255,255,0.92)';
+      ctx.fillText(r.n,r.x+r.w/2,cy+(showCnt?-fs*0.7:0));
+      if(showCnt){
+        ctx.font=`400 ${fs-1}px 'Noto Sans KR',sans-serif`;
+        ctx.fillStyle='rgba(255,255,255,0.5)';
+        ctx.fillText(r.v+'개',r.x+r.w/2,cy+fs*0.8);
+      }
+    }
+  });
+  cv.addEventListener('mousemove',e=>{
+    const rc=cv.getBoundingClientRect(),mx=e.clientX-rc.left,my=e.clientY-rc.top;
+    let f=null;for(const c of cells)if(mx>=c.x&&mx<=c.x+c.w&&my>=c.y&&my<=c.y+c.h){f=c;break}
+    if(f){
+      tip.querySelector('.tip-name').textContent=f.n;
+      tip.querySelector('.tip-val').textContent=`${f.v}개 시·도교육청 설치`;
+      tip.style.display='block';
+      let tx=e.clientX+14,ty=e.clientY+14;
+      if(tx+200>window.innerWidth)tx=e.clientX-210;
+      tip.style.left=tx+'px';tip.style.top=ty+'px';
+    }else tip.style.display='none';
+  });
+  cv.addEventListener('mouseleave',()=>tip.style.display='none');
+  return items;
+}
+
+// ── V1 트리맵 ──
+function updateTM(){
+  const y=document.getElementById('tm-sel').value;
+  const items=drawTreemap('tm-cv','tm-wrap','tm-tip',y,0);
+  const tot=items.reduce((s,i)=>s+i.v,0);
+  document.getElementById('tm-stat').innerHTML=`<strong>${tot}개</strong> 설치 · <strong>${items.length}개</strong> 기능`;
+}
+
+// ── V1 히트맵 ──
+function updateHM(){
+  const sort=document.getElementById('hm-sort').value;
+  const filt=document.getElementById('hm-filt').value;
+  const totals={};
+  YEARS.forEach(y=>Object.entries(DATA[y]).forEach(([d,v])=>{totals[d]=(totals[d]||0)+v}));
+  let depts=Object.keys(totals);
+  if(filt==='2plus')depts=depts.filter(d=>totals[d]>=2);
+  if(sort==='total')depts.sort((a,b)=>totals[b]-totals[a]);
+  else if(sort==='name')depts.sort();
+  else depts.sort((a,b)=>((DATA[sort]&&DATA[sort][b])||0)-((DATA[sort]&&DATA[sort][a])||0));
+  const tbl=document.getElementById('hm-tbl');
+  const tip=document.getElementById('hm-tip');
+  let h=`<tr><th class="corner dept">기능명칭</th>`;
+  YEARS.forEach(y=>{h+=`<th class="yr">${y}</th>`});
+  h+=`</tr>`;
+  depts.forEach(d=>{
+    h+=`<tr><th class="dept">${d}</th>`;
+    YEARS.forEach(y=>{
+      const v=(DATA[y]&&DATA[y][d])||0;
+      const bg=cellColor(v);
+      h+=`<td class="cell" style="background:${bg||'transparent'};color:${v?'rgba(255,255,255,0.88)':'transparent'}" data-n="${d}" data-y="${y}" data-v="${v}">${v||''}</td>`;
+    });
+    h+=`</tr>`;
+  });
+  tbl.innerHTML=h;
+  tbl.querySelectorAll('td.cell').forEach(td=>{
+    td.addEventListener('mouseenter',e=>{
+      const v=td.dataset.v;if(!v||v==='0')return;
+      tip.textContent=`${td.dataset.n} (${td.dataset.y}년) — ${v}개 지역`;
+      tip.style.display='block';tip.style.left=(e.clientX+12)+'px';tip.style.top=(e.clientY+12)+'px';
+    });
+    td.addEventListener('mousemove',e=>{tip.style.left=(e.clientX+12)+'px';tip.style.top=(e.clientY+12)+'px';});
+    td.addEventListener('mouseleave',()=>tip.style.display='none');
+  });
+}
+
+// ── V1 막대차트 ──
+let barChart=null;
+function updateBar(){
+  const year=document.getElementById('bar-sel').value;
+  const topN=document.getElementById('bar-topn').value;
+  const raw=DATA[year];
+  let entries=Object.entries(raw).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  if(topN!=='all')entries=entries.slice(0,parseInt(topN));
+  const labels=entries.map(([n])=>n),vals=entries.map(([,v])=>v);
+  const h=Math.max(labels.length*44+80,300);
+  document.getElementById('bar-wrap').style.height=h+'px';
+  if(barChart)barChart.destroy();
+  barChart=new Chart(document.getElementById('bar-cv'),{
+    type:'bar',
+    data:{labels,datasets:[{data:vals,backgroundColor:labels.map((_,i)=>PAL[i%PAL.length]+'bb'),borderColor:labels.map((_,i)=>PAL[i%PAL.length]),borderWidth:1,borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.parsed.x}개 시·도교육청`},backgroundColor:'#1c2128',titleColor:'#e6edf3',bodyColor:'#8b949e',borderColor:'#30363d',borderWidth:1}},
+      scales:{
+        x:{grid:{color:'rgba(48,54,61,0.8)'},ticks:{color:'#8b949e',font:{size:11}},max:17,title:{display:true,text:'설치 시·도 수',color:'#6e7681',font:{size:11}},border:{color:'#30363d'}},
+        y:{ticks:{color:'#e6edf3',font:{size:11,weight:'500'}},grid:{display:false},border:{color:'#30363d'}}
+      },layout:{padding:{right:12}}}
+  });
+}
+
+// ── V2 대시보드 ──
+let barChart2=null;
+function updateV2(){
+  const year=document.getElementById('d-sel').value;
+  const raw=DATA[year];
+  const incl=Object.entries(raw).filter(([,v])=>v>=2).sort((a,b)=>b[1]-a[1]);
+  const excl=Object.entries(raw).filter(([,v])=>v===1).map(([n])=>n);
+  const tot=incl.reduce((s,[,v])=>s+v,0);
+  document.getElementById('d-stat').innerHTML=`<strong>${tot}개</strong> 설치 · <strong>${incl.length}개</strong> 기능 (2개 이상) · 제외 <strong>${excl.length}개</strong>`;
+  document.getElementById('excl-title').textContent=`1개 지역만 설치 — 별도 표시 (${excl.length}개)`;
+  const et=document.getElementById('excl-tags');
+  et.innerHTML='';
+  excl.forEach(n=>{const t=document.createElement('span');t.className='etag';t.textContent=n;et.appendChild(t)});
+
+  // 트리맵
+  drawTreemap('tm2-cv','tm2-wrap','tm2-tip',year,1);
+
+  // 히트맵
+  const totals2={};
+  YEARS.forEach(y=>Object.entries(DATA[y]).filter(([,v])=>v>=2).forEach(([d,v])=>{totals2[d]=(totals2[d]||0)+v}));
+  let depts2=Object.keys(totals2).sort((a,b)=>totals2[b]-totals2[a]);
+  const tbl2=document.getElementById('hm2-tbl');
+  const tip2=document.getElementById('hm2-tip');
+  let h2=`<tr><th class="corner dept">기능명칭</th>`;
+  YEARS.forEach(y=>{h2+=`<th class="yr">${y}</th>`});
+  h2+=`</tr>`;
+  depts2.forEach(d=>{
+    h2+=`<tr><th class="dept">${d}</th>`;
+    YEARS.forEach(y=>{
+      const v=(DATA[y]&&DATA[y][d])||0;
+      const show=v>=2;
+      const bg=show?cellColor(v):'';
+      h2+=`<td class="cell" style="background:${bg||'transparent'};color:${show?'rgba(255,255,255,0.88)':'transparent'}" data-n="${d}" data-y="${y}" data-v="${v}">${show?v:''}</td>`;
+    });
+    h2+=`</tr>`;
+  });
+  tbl2.innerHTML=h2;
+  tbl2.querySelectorAll('td.cell').forEach(td=>{
+    td.addEventListener('mouseenter',e=>{
+      const v=parseInt(td.dataset.v);if(v<2)return;
+      tip2.textContent=`${td.dataset.n} (${td.dataset.y}년) — ${v}개 지역`;
+      tip2.style.display='block';tip2.style.left=(e.clientX+12)+'px';tip2.style.top=(e.clientY+12)+'px';
+    });
+    td.addEventListener('mousemove',e=>{tip2.style.left=(e.clientX+12)+'px';tip2.style.top=(e.clientY+12)+'px';});
+    td.addEventListener('mouseleave',()=>tip2.style.display='none');
+  });
+
+  // 막대
+  const topN=document.getElementById('d-bsort').value;
+  let entries=incl.slice();
+  if(topN!=='all')entries=entries.slice(0,parseInt(topN));
+  const labels2=entries.map(([n])=>n),vals2=entries.map(([,v])=>v);
+  const bh=Math.max(labels2.length*44+80,300);
+  document.getElementById('dbar-wrap').style.height=bh+'px';
+  if(barChart2)barChart2.destroy();
+  barChart2=new Chart(document.getElementById('dbar-cv'),{
+    type:'bar',
+    data:{labels:labels2,datasets:[{data:vals2,backgroundColor:labels2.map((_,i)=>PAL[i%PAL.length]+'bb'),borderColor:labels2.map((_,i)=>PAL[i%PAL.length]),borderWidth:1,borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.parsed.x}개 시·도교육청`},backgroundColor:'#1c2128',titleColor:'#e6edf3',bodyColor:'#8b949e',borderColor:'#30363d',borderWidth:1}},
+      scales:{
+        x:{grid:{color:'rgba(48,54,61,0.8)'},ticks:{color:'#8b949e',font:{size:11}},max:17,title:{display:true,text:'설치 시·도 수',color:'#6e7681',font:{size:11}},border:{color:'#30363d'}},
+        y:{ticks:{color:'#e6edf3',font:{size:11,weight:'500'}},grid:{display:false},border:{color:'#30363d'}}
+      },layout:{padding:{right:12}}}
+  });
+}
+
+// 이벤트 연결
+document.getElementById('tm-sel').addEventListener('change',updateTM);
+document.getElementById('hm-sort').addEventListener('change',updateHM);
+document.getElementById('hm-filt').addEventListener('change',updateHM);
+document.getElementById('bar-sel').addEventListener('change',updateBar);
+document.getElementById('bar-topn').addEventListener('change',updateBar);
+document.getElementById('d-sel').addEventListener('change',updateV2);
+document.getElementById('d-bsort').addEventListener('change',updateV2);
+
+// 초기 렌더
+updateTM();updateHM();updateBar();updateV2();
+window.addEventListener('resize',()=>{updateTM();updateV2();});
+</script>
+</body>
+</html>
