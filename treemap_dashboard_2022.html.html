@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2022 시도별 학생수 트리맵</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f0f13;
+  --surface: #18181f;
+  --surface2: #22222c;
+  --border: rgba(255,255,255,0.07);
+  --text: #f0efe8;
+  --text2: #9b9a96;
+  --text3: #5a5a58;
+  --accent: #e8c97a;
+
+  --유치원: #f5a623;
+  --초등학교: #4ecb8d;
+  --중학교: #5b9bd5;
+  --고등학교: #c47ed6;
+  --특수학교: #e07b6a;
+  --기타: #7a7a80;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── 헤더 ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.header-left h1 {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  color: var(--text);
+}
+.header-left p {
+  font-size: 11px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── 컨트롤 ── */
+.ctrl-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+.ctrl-btn {
+  padding: 5px 13px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--text2);
+  background: transparent;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.ctrl-btn.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
+.ctrl-btn:hover:not(.active) { color: var(--text); }
+
+select.ctrl-select {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: inherit;
+  background: var(--surface2);
+  color: var(--text);
+  cursor: pointer;
+  outline: none;
+}
+
+/* ── 요약 바 ── */
+.summary-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  overflow-x: auto;
+}
+.sum-item {
+  flex: 1;
+  min-width: 120px;
+  padding: 12px 20px;
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .15s;
+}
+.sum-item:last-child { border-right: none; }
+.sum-item:hover { background: var(--surface2); }
+.sum-item.active { background: var(--surface2); }
+.sum-item .lbl {
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.sum-item .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.sum-item .val {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-top: 3px;
+}
+.sum-item .sub {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 1px;
+}
+
+/* ── 메인 레이아웃 ── */
+.main {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  height: calc(100vh - 121px);
+}
+
+/* ── 트리맵 ── */
+#treemap-wrap {
+  position: relative;
+  overflow: hidden;
+  padding: 16px;
+}
+#treemap-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* 트리맵 셀 */
+.tm-cell {
+  cursor: pointer;
+  transition: opacity .18s;
+}
+.tm-cell:hover { opacity: 0.82; }
+.tm-cell rect {
+  stroke: var(--bg);
+  stroke-width: 2;
+  rx: 4;
+}
+.tm-cell text { pointer-events: none; }
+.tm-sido { font-size: 15px; font-weight: 700; fill: rgba(255,255,255,0.95); }
+.tm-val  { font-size: 11px; fill: rgba(255,255,255,0.65); }
+.tm-sub  { font-size: 10px; fill: rgba(255,255,255,0.45); }
+
+/* ── 사이드패널 ── */
+.side {
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.side-header {
+  padding: 16px 18px 10px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 10;
+}
+.side-header h2 { font-size: 13px; font-weight: 500; color: var(--text2); }
+.side-header .sido-name {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-top: 2px;
+  color: var(--text);
+}
+.side-header .sido-total {
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+
+.side-section { padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.side-section h3 { font-size: 10px; color: var(--text3); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 10px; }
+
+/* 학교급별 바 */
+.level-row { margin-bottom: 10px; }
+.level-row .level-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 4px;
+}
+.level-row .level-name { font-size: 12px; color: var(--text); }
+.level-row .level-val  { font-size: 12px; font-weight: 600; color: var(--text); }
+.level-row .level-pct  { font-size: 10px; color: var(--text3); margin-left: 4px; }
+.level-bar-bg {
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.level-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width .4s ease;
+}
+
+/* 순위 */
+.rank-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.rank-item:last-child { border-bottom: none; }
+.rank-num {
+  font-size: 10px;
+  color: var(--text3);
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.rank-bar-wrap { flex: 1; }
+.rank-sido { font-size: 12px; color: var(--text); margin-bottom: 3px; }
+.rank-bar-bg { height: 3px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.rank-bar-fill { height: 100%; border-radius: 2px; }
+.rank-val { font-size: 11px; color: var(--text2); flex-shrink: 0; text-align: right; min-width: 52px; }
+
+/* 범례 */
+.legend-wrap { display: flex; flex-direction: column; gap: 7px; }
+.legend-item { display: flex; align-items: center; gap: 8px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legend-name { font-size: 12px; color: var(--text2); flex: 1; }
+.legend-pct { font-size: 11px; color: var(--text3); }
+
+/* 툴팁 */
+.tooltip {
+  position: fixed;
+  pointer-events: none;
+  background: rgba(10,10,14,0.95);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.7;
+  z-index: 9999;
+  display: none;
+  backdrop-filter: blur(8px);
+}
+.tooltip strong { font-size: 13px; font-weight: 600; display: block; margin-bottom: 2px; }
+
+/* 브레드크럼 */
+.breadcrumb {
+  position: absolute;
+  top: 20px; left: 22px;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px;
+  color: var(--text2);
+  z-index: 5;
+  pointer-events: none;
+}
+.breadcrumb .crumb { color: var(--text3); }
+.breadcrumb .current { color: var(--text); font-weight: 500; }
+.breadcrumb .sep { color: var(--text3); }
+
+/* 스크롤바 */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>시도별 학생수 트리맵</h1>
+    <p>2022년 4월 기준 · 전국 유초중등 학교</p>
+  </div>
+  <div class="header-right">
+    <div class="ctrl-group">
+      <button class="ctrl-btn active" onclick="setLevel('all')">전체</button>
+      <button class="ctrl-btn" onclick="setLevel('유치원')">유치원</button>
+      <button class="ctrl-btn" onclick="setLevel('초등학교')">초등</button>
+      <button class="ctrl-btn" onclick="setLevel('중학교')">중학교</button>
+      <button class="ctrl-btn" onclick="setLevel('고등학교')">고등학교</button>
+      <button class="ctrl-btn" onclick="setLevel('특수학교')">특수</button>
+    </div>
+    <select class="ctrl-select" id="color-mode" onchange="render()">
+      <option value="level">학교급별 색상</option>
+      <option value="sido">시도별 색상</option>
+      <option value="intensity">학생수 강도</option>
+    </select>
+  </div>
+</header>
+
+<!-- 요약 바 -->
+<div class="summary-bar" id="summary-bar"></div>
+
+<div class="main">
+  <!-- 트리맵 -->
+  <div id="treemap-wrap">
+    <div class="breadcrumb" id="breadcrumb">
+      <span class="current">전국</span>
+    </div>
+    <svg id="treemap-svg"></svg>
+  </div>
+
+  <!-- 사이드패널 -->
+  <div class="side">
+    <div class="side-header">
+      <h2>상세 정보</h2>
+      <div class="sido-name" id="side-sido">전국</div>
+      <div class="sido-total" id="side-total">—</div>
+    </div>
+
+    <div class="side-section">
+      <h3>학교급별 현황</h3>
+      <div id="side-levels"></div>
+    </div>
+
+    <div class="side-section">
+      <h3>시도별 순위</h3>
+      <div id="side-rank"></div>
+    </div>
+
+    <div class="side-section">
+      <h3>색상 범례</h3>
+      <div class="legend-wrap" id="side-legend"></div>
+    </div>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ── 데이터 ──
+const DETAIL = [
+  {sido:"강원",level:"고등학교",schools:122,students:37744,male:19584,female:18160},
+  {sido:"강원",level:"기타",schools:2,students:135,male:67,female:68},
+  {sido:"강원",level:"유치원",schools:359,students:13168,male:6705,female:6463},
+  {sido:"강원",level:"중학교",schools:164,students:38495,male:19731,female:18764},
+  {sido:"강원",level:"초등학교",schools:349,students:71530,male:36689,female:34841},
+  {sido:"강원",level:"특수학교",schools:9,students:828,male:537,female:291},
+  {sido:"경기",level:"고등학교",schools:491,students:342368,male:175171,female:167197},
+  {sido:"경기",level:"기타",schools:14,students:2484,male:1113,female:1371},
+  {sido:"경기",level:"유치원",schools:2175,students:153149,male:77562,female:75587},
+  {sido:"경기",level:"중학교",schools:657,students:381173,male:194877,female:186296},
+  {sido:"경기",level:"초등학교",schools:1320,students:767346,male:392358,female:374988},
+  {sido:"경기",level:"특수학교",schools:38,students:5330,male:3672,female:1658},
+  {sido:"경남",level:"고등학교",schools:193,students:85334,male:44558,female:40776},
+  {sido:"경남",level:"기타",schools:8,students:412,male:187,female:225},
+  {sido:"경남",level:"유치원",schools:683,students:42385,male:21592,female:20793},
+  {sido:"경남",level:"중학교",schools:267,students:95431,male:49098,female:46333},
+  {sido:"경남",level:"초등학교",schools:510,students:187423,male:96478,female:90945},
+  {sido:"경남",level:"특수학교",schools:11,students:1764,male:1162,female:602},
+  {sido:"경북",level:"고등학교",schools:189,students:63584,male:33925,female:29659},
+  {sido:"경북",level:"기타",schools:7,students:1463,male:800,female:663},
+  {sido:"경북",level:"유치원",schools:682,students:31365,male:15914,female:15451},
+  {sido:"경북",level:"중학교",schools:262,students:64049,male:33376,female:30673},
+  {sido:"경북",level:"초등학교",schools:473,students:127385,male:65777,female:61608},
+  {sido:"경북",level:"특수학교",schools:8,students:1444,male:1015,female:429},
+  {sido:"광주",level:"고등학교",schools:71,students:42282,male:21723,female:20559},
+  {sido:"광주",level:"기타",schools:2,students:588,male:308,female:280},
+  {sido:"광주",level:"유치원",schools:288,students:20998,male:10581,female:10417},
+  {sido:"광주",level:"중학교",schools:93,students:43820,male:22536,female:21284},
+  {sido:"광주",level:"초등학교",schools:155,students:83929,male:43259,female:40670},
+  {sido:"광주",level:"특수학교",schools:5,students:1090,male:715,female:375},
+  {sido:"대구",level:"고등학교",schools:95,students:59947,male:31097,female:28850},
+  {sido:"대구",level:"기타",schools:3,students:113,male:61,female:52},
+  {sido:"대구",level:"유치원",schools:329,students:32272,male:16113,female:16159},
+  {sido:"대구",level:"중학교",schools:126,students:62307,male:31980,female:30327},
+  {sido:"대구",level:"초등학교",schools:233,students:121485,male:62201,female:59284},
+  {sido:"대구",level:"특수학교",schools:11,students:1830,male:1191,female:639},
+  {sido:"대전",level:"고등학교",schools:64,students:39572,male:20670,female:18902},
+  {sido:"대전",level:"기타",schools:3,students:103,male:37,female:66},
+  {sido:"대전",level:"유치원",schools:255,students:20405,male:10429,female:9976},
+  {sido:"대전",level:"중학교",schools:90,students:40470,male:20738,female:19732},
+  {sido:"대전",level:"초등학교",schools:149,students:76960,male:39641,female:37319},
+  {sido:"대전",level:"특수학교",schools:6,students:1073,male:734,female:339},
+  {sido:"부산",level:"고등학교",schools:145,students:70739,male:36628,female:34111},
+  {sido:"부산",level:"기타",schools:2,students:54,male:32,female:22},
+  {sido:"부산",level:"유치원",schools:394,students:36308,male:18296,female:18012},
+  {sido:"부산",level:"중학교",schools:171,students:75173,male:38574,female:36599},
+  {sido:"부산",level:"초등학교",schools:304,students:154858,male:79552,female:75306},
+  {sido:"부산",level:"특수학교",schools:15,students:1937,male:1301,female:636},
+  {sido:"서울",level:"고등학교",schools:327,students:208823,male:106678,female:102145},
+  {sido:"서울",level:"기타",schools:16,students:3028,male:685,female:2343},
+  {sido:"서울",level:"유치원",schools:788,students:66524,male:33838,female:32686},
+  {sido:"서울",level:"중학교",schools:391,students:205681,male:106508,female:99173},
+  {sido:"서울",level:"초등학교",schools:609,students:393565,male:201639,female:191926},
+  {sido:"서울",level:"특수학교",schools:32,students:4452,male:2939,female:1513},
+  {sido:"세종",level:"고등학교",schools:21,students:11484,male:5739,female:5745},
+  {sido:"세종",level:"유치원",schools:64,students:6422,male:3235,female:3187},
+  {sido:"세종",level:"중학교",schools:27,students:14809,male:7351,female:7458},
+  {sido:"세종",level:"초등학교",schools:52,students:32230,male:16537,female:15693},
+  {sido:"세종",level:"특수학교",schools:1,students:186,male:128,female:58},
+  {sido:"울산",level:"고등학교",schools:58,students:29783,male:15600,female:14183},
+  {sido:"울산",level:"기타",schools:1,students:34,male:16,female:18},
+  {sido:"울산",level:"유치원",schools:191,students:14779,male:7469,female:7310},
+  {sido:"울산",level:"중학교",schools:65,students:33082,male:17082,female:16000},
+  {sido:"울산",level:"초등학교",schools:121,students:66450,male:34317,female:32133},
+  {sido:"울산",level:"특수학교",schools:4,students:746,male:508,female:238},
+  {sido:"인천",level:"고등학교",schools:130,students:72239,male:37392,female:34847},
+  {sido:"인천",level:"기타",schools:4,students:31,male:20,female:11},
+  {sido:"인천",level:"유치원",schools:396,students:35427,male:17857,female:17570},
+  {sido:"인천",level:"중학교",schools:143,students:78975,male:40289,female:38686},
+  {sido:"인천",level:"초등학교",schools:260,students:155906,male:79960,female:75946},
+  {sido:"인천",level:"특수학교",schools:10,students:1854,male:1261,female:593},
+  {sido:"전남",level:"고등학교",schools:146,students:45322,male:23331,female:21991},
+  {sido:"전남",level:"기타",schools:4,students:194,male:107,female:87},
+  {sido:"전남",level:"유치원",schools:516,students:16285,male:8290,female:7995},
+  {sido:"전남",level:"중학교",schools:252,students:47120,male:24166,female:22954},
+  {sido:"전남",level:"초등학교",schools:426,students:90238,male:46063,female:44175},
+  {sido:"전남",level:"특수학교",schools:9,students:1174,male:797,female:377},
+  {sido:"전북",level:"고등학교",schools:135,students:48634,male:25428,female:23206},
+  {sido:"전북",level:"기타",schools:1,students:0,male:0,female:0},
+  {sido:"전북",level:"유치원",schools:501,students:18740,male:9573,female:9167},
+  {sido:"전북",level:"중학교",schools:212,students:49251,male:25342,female:23909},
+  {sido:"전북",level:"초등학교",schools:421,students:91290,male:46884,female:44406},
+  {sido:"전북",level:"특수학교",schools:10,students:1125,male:762,female:363},
+  {sido:"제주",level:"고등학교",schools:31,students:18523,male:9719,female:8804},
+  {sido:"제주",level:"유치원",schools:119,students:5945,male:3018,female:2927},
+  {sido:"제주",level:"중학교",schools:46,students:20218,male:10389,female:9829},
+  {sido:"제주",level:"초등학교",schools:114,students:41628,male:21425,female:20203},
+  {sido:"제주",level:"특수학교",schools:3,students:503,male:335,female:168},
+  {sido:"충남",level:"고등학교",schools:120,students:56687,male:29596,female:27091},
+  {sido:"충남",level:"기타",schools:3,students:31,male:16,female:15},
+  {sido:"충남",level:"유치원",schools:498,students:23647,male:11991,female:11656},
+  {sido:"충남",level:"중학교",schools:187,students:60179,male:31041,female:29138},
+  {sido:"충남",level:"초등학교",schools:411,students:118228,male:60771,female:57457},
+  {sido:"충남",level:"특수학교",schools:10,students:1265,male:872,female:393},
+  {sido:"충북",level:"고등학교",schools:84,students:39498,male:20532,female:18966},
+  {sido:"충북",level:"기타",schools:5,students:490,male:323,female:167},
+  {sido:"충북",level:"유치원",schools:324,students:14993,male:7636,female:7357},
+  {sido:"충북",level:"중학교",schools:129,students:42792,male:22049,female:20743},
+  {sido:"충북",level:"초등학교",schools:256,students:83827,male:42660,female:41167},
+  {sido:"충북",level:"특수학교",schools:10,students:1329,male:878,female:451}
+];
+
+const SIDO_ORDER = ['서울','부산','대구','인천','광주','대전','울산','세종','경기','강원','충북','충남','전북','전남','경북','경남','제주'];
+const LEVELS = ['유치원','초등학교','중학교','고등학교','특수학교'];
+const LEVEL_COLORS = {
+  '유치원':'#f5a623','초등학교':'#4ecb8d','중학교':'#5b9bd5',
+  '고등학교':'#c47ed6','특수학교':'#e07b6a','기타':'#7a7a80'
+};
+const SIDO_COLORS = [
+  '#e85d4a','#e8944a','#e8c44a','#9ecf5b','#4ecb8d','#4ecbbb',
+  '#4eaecb','#5b9bd5','#6e7dd5','#9b7dd5','#c47ed6','#d67eb4',
+  '#d67e8c','#cb5b5b','#b08050','#7a9b70','#5b9b8c'
+];
+
+let currentLevel = 'all';
+let selectedSido = null;
+let drillDown = false;
+
+// ── 데이터 집계 ──
+function getSidoTotals(levelFilter) {
+  const map = {};
+  SIDO_ORDER.forEach(s => { map[s] = {sido:s, total:0, schools:0}; LEVELS.forEach(l => map[s][l]=0); });
+  DETAIL.forEach(d => {
+    if (!map[d.sido]) return;
+    if (levelFilter === 'all' || d.level === levelFilter) {
+      map[d.sido].total += d.students;
+      map[d.sido].schools += d.schools;
+    }
+    if (LEVELS.includes(d.level)) map[d.sido][d.level] = (map[d.sido][d.level]||0) + d.students;
+  });
+  return SIDO_ORDER.map(s => map[s]).filter(d => d.total > 0);
+}
+
+function getLevelBreakdown(sido) {
+  const rows = DETAIL.filter(d => d.sido === sido && LEVELS.includes(d.level));
+  const total = rows.reduce((s,d) => s+d.students, 0);
+  return LEVELS.map(l => {
+    const r = rows.find(d => d.level === l);
+    return {level:l, students:r?.students||0, schools:r?.schools||0, pct: total>0?(r?.students||0)/total*100:0};
+  }).filter(d => d.students > 0);
+}
+
+// ── 요약 바 ──
+function renderSummary() {
+  const bar = document.getElementById('summary-bar');
+  const data = getSidoTotals('all');
+  const grandTotal = data.reduce((s,d) => s+d.total, 0);
+  const levelTotals = {};
+  LEVELS.forEach(l => {
+    levelTotals[l] = data.reduce((s,d) => s+(d[l]||0), 0);
+  });
+
+  const items = [
+    {label:'전국 합계', dot:'#e8c97a', val:grandTotal, sub:'17개 시도', filter:'all'},
+    ...LEVELS.map(l => ({label:l, dot:LEVEL_COLORS[l], val:levelTotals[l], sub:Math.round(levelTotals[l]/grandTotal*100)+'%', filter:l}))
+  ];
+
+  bar.innerHTML = items.map(it => `
+    <div class="sum-item ${currentLevel===it.filter?'active':''}" onclick="setLevel('${it.filter}')">
+      <div class="lbl"><div class="dot" style="background:${it.dot}"></div>${it.label}</div>
+      <div class="val">${it.val>=10000?(it.val/10000).toFixed(1)+'만':it.val.toLocaleString()}</div>
+      <div class="sub">${it.sub}</div>
+    </div>
+  `).join('');
+}
+
+// ── 사이드패널 ──
+function renderSide(sido) {
+  const sidoName = sido || '전국';
+  const allData = getSidoTotals('all');
+  const grandTotal = allData.reduce((s,d) => s+d.total, 0);
+
+  document.getElementById('side-sido').textContent = sidoName;
+
+  if (sido) {
+    const sidoData = allData.find(d => d.sido === sido);
+    const pct = (sidoData.total / grandTotal * 100).toFixed(1);
+    document.getElementById('side-total').textContent =
+      `${sidoData.total.toLocaleString()}명 · 전국 ${pct}%`;
+
+    // 학교급별
+    const breakdown = getLevelBreakdown(sido);
+    const maxStudents = Math.max(...breakdown.map(d => d.students));
+    document.getElementById('side-levels').innerHTML = breakdown.map(b => `
+      <div class="level-row">
+        <div class="level-header">
+          <span class="level-name">${b.level}</span>
+          <span>
+            <span class="level-val">${b.students.toLocaleString()}</span>
+            <span class="level-pct">${b.pct.toFixed(1)}%</span>
+          </span>
+        </div>
+        <div class="level-bar-bg">
+          <div class="level-bar-fill" style="width:${b.students/maxStudents*100}%;background:${LEVEL_COLORS[b.level]}"></div>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    document.getElementById('side-total').textContent = `${grandTotal.toLocaleString()}명`;
+    // 전국 학교급 합계
+    const levelTotals = LEVELS.map(l => ({level:l, val:allData.reduce((s,d)=>s+(d[l]||0),0)}));
+    const maxV = Math.max(...levelTotals.map(d=>d.val));
+    document.getElementById('side-levels').innerHTML = levelTotals.map(lt => `
+      <div class="level-row">
+        <div class="level-header">
+          <span class="level-name">${lt.level}</span>
+          <span class="level-val">${lt.val.toLocaleString()}</span>
+        </div>
+        <div class="level-bar-bg">
+          <div class="level-bar-fill" style="width:${lt.val/maxV*100}%;background:${LEVEL_COLORS[lt.level]}"></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // 순위
+  const sorted = [...allData].sort((a,b) => b.total - a.total);
+  const maxV = sorted[0].total;
+  document.getElementById('side-rank').innerHTML = sorted.map((d,i) => `
+    <div class="rank-item" style="${d.sido===sido?'background:rgba(232,201,122,0.05);border-radius:4px;':''}">
+      <div class="rank-num">${i+1}</div>
+      <div class="rank-bar-wrap">
+        <div class="rank-sido" style="${d.sido===sido?'color:var(--accent);font-weight:600;':''}">${d.sido}</div>
+        <div class="rank-bar-bg">
+          <div class="rank-bar-fill" style="width:${d.total/maxV*100}%;background:${d.sido===sido?'var(--accent)':SIDO_COLORS[SIDO_ORDER.indexOf(d.sido)%SIDO_COLORS.length]}"></div>
+        </div>
+      </div>
+      <div class="rank-val">${(d.total/10000).toFixed(1)}만</div>
+    </div>
+  `).join('');
+
+  // 범례
+  const colorMode = document.getElementById('color-mode').value;
+  if (colorMode === 'level' || colorMode === 'intensity') {
+    document.getElementById('side-legend').innerHTML = LEVELS.map(l => {
+      const total = allData.reduce((s,d)=>s+(d[l]||0),0);
+      const grandT = allData.reduce((s,d)=>s+d.total,0);
+      return `
+        <div class="legend-item">
+          <div class="legend-dot" style="background:${LEVEL_COLORS[l]}"></div>
+          <span class="legend-name">${l}</span>
+          <span class="legend-pct">${(total/grandT*100).toFixed(1)}%</span>
+        </div>`;
+    }).join('');
+  } else {
+    document.getElementById('side-legend').innerHTML = SIDO_ORDER.map((s,i) => `
+      <div class="legend-item">
+        <div class="legend-dot" style="background:${SIDO_COLORS[i%SIDO_COLORS.length]}"></div>
+        <span class="legend-name">${s}</span>
+      </div>`).join('');
+  }
+}
+
+// ── 트리맵 ──
+const tip = document.getElementById('tooltip');
+function showTip(e, html) {
+  tip.style.display='block'; tip.innerHTML=html;
+  tip.style.left=(e.clientX+16)+'px'; tip.style.top=(e.clientY-10)+'px';
+}
+function hideTip() { tip.style.display='none'; }
+document.addEventListener('mousemove', e => {
+  if(tip.style.display==='block'){
+    tip.style.left=(e.clientX+16)+'px'; tip.style.top=(e.clientY-10)+'px';
+  }
+});
+
+function getCellColor(d, index) {
+  const mode = document.getElementById('color-mode').value;
+  if (mode === 'sido') return SIDO_COLORS[SIDO_ORDER.indexOf(d.sido) % SIDO_COLORS.length];
+  if (mode === 'intensity') {
+    const allData = getSidoTotals(currentLevel);
+    const max = d3.max(allData, x => x.total);
+    const ratio = d.total / max;
+    return d3.interpolateRgb('#1e2a38','#4ecb8d')(ratio);
+  }
+  // level mode: 드릴다운 시 학교급 색, 아니면 초등학교 색 기반
+  if (drillDown && d.level) return LEVEL_COLORS[d.level] || LEVEL_COLORS['기타'];
+  // 전국 뷰: 시도별로 살짝 다른 톤의 파란/청록
+  const baseHues = [200,210,180,220,160,230,170,215,190,205,175,195,165,185,225,155,200];
+  const h = baseHues[SIDO_ORDER.indexOf(d.sido) % baseHues.length];
+  const allData = getSidoTotals(currentLevel);
+  const max = d3.max(allData, x => x.total);
+  const ratio = d.total / max;
+  const l = 25 + ratio * 20;
+  return `hsl(${h},50%,${l}%)`;
+}
+
+function renderTreemap() {
+  const wrap = document.getElementById('treemap-wrap');
+  const svg = document.getElementById('treemap-svg');
+  const W = wrap.clientWidth;
+  const H = wrap.clientHeight;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = '';
+
+  const data = getSidoTotals(currentLevel);
+  const grandTotal = data.reduce((s,d) => s+d.total, 0);
+
+  let tmData;
+  if (drillDown && selectedSido) {
+    // 드릴다운: 선택 시도의 학교급별
+    const breakdown = getLevelBreakdown(selectedSido);
+    tmData = {
+      name: selectedSido,
+      children: breakdown.map(b => ({...b, sido: selectedSido}))
+    };
+  } else {
+    // 전국: 시도별
+    tmData = {
+      name: '전국',
+      children: data.map(d => ({...d, value: d.total}))
+    };
+  }
+
+  const root = d3.hierarchy(tmData)
+    .sum(d => d.value || d.students || 0)
+    .sort((a,b) => b.value - a.value);
+
+  d3.treemap()
+    .size([W, H])
+    .paddingOuter(6)
+    .paddingInner(3)
+    .paddingTop(0)
+    .round(true)(root);
+
+  const leaves = root.leaves();
+  const g = d3.select(svg);
+
+  leaves.forEach((node, i) => {
+    const d = node.data;
+    const x = node.x0, y = node.y0;
+    const w = node.x1 - node.x0;
+    const h = node.y1 - node.y0;
+    if (w < 2 || h < 2) return;
+
+    const color = getCellColor(d, i);
+    const cell = g.append('g').attr('class','tm-cell');
+
+    // 배경 rect
+    cell.append('rect')
+      .attr('x', x).attr('y', y).attr('width', w).attr('height', h)
+      .attr('rx', 5)
+      .attr('fill', color)
+      .attr('stroke', '#0f0f13')
+      .attr('stroke-width', 2);
+
+    // 내부 미묘한 그라데이션 효과 (overlay)
+    const gradId = `grad-${i}`;
+    const defs = g.append('defs');
+    const grad = defs.append('linearGradient')
+      .attr('id', gradId).attr('x1','0%').attr('y1','0%').attr('x2','0%').attr('y2','100%');
+    grad.append('stop').attr('offset','0%').attr('stop-color','rgba(255,255,255,0.08)');
+    grad.append('stop').attr('offset','100%').attr('stop-color','rgba(0,0,0,0.15)');
+    cell.append('rect')
+      .attr('x', x).attr('y', y).attr('width', w).attr('height', h)
+      .attr('rx', 5)
+      .attr('fill', `url(#${gradId})`)
+      .attr('pointer-events','none');
+
+    const name = drillDown ? d.level : d.sido;
+    const val = drillDown ? d.students : d.total;
+    const pct = (val / grandTotal * 100).toFixed(1);
+
+    // 텍스트 렌더
+    const pad = 8;
+    if (w > 50 && h > 30) {
+      cell.append('text')
+        .attr('class','tm-sido')
+        .attr('x', x + pad).attr('y', y + pad + 14)
+        .attr('font-size', Math.min(16, Math.max(10, w/6)) + 'px')
+        .text(name);
+    }
+    if (w > 70 && h > 52) {
+      cell.append('text')
+        .attr('class','tm-val')
+        .attr('x', x + pad).attr('y', y + pad + 32)
+        .attr('font-size', Math.min(12, Math.max(9, w/8)) + 'px')
+        .text(val >= 10000 ? (val/10000).toFixed(1)+'만명' : val.toLocaleString()+'명');
+    }
+    if (w > 90 && h > 68) {
+      cell.append('text')
+        .attr('class','tm-sub')
+        .attr('x', x + pad).attr('y', y + pad + 48)
+        .attr('font-size', '10px')
+        .text(`전국 ${pct}%`);
+    }
+
+    // 이벤트
+    const tipContent = drillDown
+      ? `<strong>${selectedSido} · ${d.level}</strong>학생 ${val.toLocaleString()}명<br>학교 ${d.schools}개교<br>전체 ${pct}%`
+      : `<strong>${d.sido}</strong>학생 ${val.toLocaleString()}명<br>학교 ${d.schools}개교<br>전체 ${pct}%`;
+
+    cell.on('mouseover', e => { showTip(e, tipContent); })
+      .on('mouseout', hideTip)
+      .on('click', () => {
+        if (!drillDown) {
+          selectedSido = d.sido;
+          drillDown = true;
+          document.getElementById('breadcrumb').innerHTML =
+            `<span class="crumb" style="cursor:pointer" onclick="resetDrill()">전국</span>
+             <span class="sep">›</span>
+             <span class="current">${d.sido}</span>`;
+          renderTreemap();
+          renderSide(d.sido);
+        } else {
+          // 같은 셀 재클릭: 선택 해제
+          selectedSido = null;
+          drillDown = false;
+          resetDrill();
+        }
+      });
+  });
+}
+
+function resetDrill() {
+  selectedSido = null;
+  drillDown = false;
+  document.getElementById('breadcrumb').innerHTML = `<span class="current">전국</span>`;
+  renderTreemap();
+  renderSide(null);
+}
+
+function setLevel(level) {
+  currentLevel = level;
+  drillDown = false;
+  selectedSido = null;
+  document.getElementById('breadcrumb').innerHTML = `<span class="current">전국</span>`;
+  document.querySelectorAll('.ctrl-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['all','유치원','초등학교','중학교','고등학교','특수학교'][i] === level);
+  });
+  renderSummary();
+  renderTreemap();
+  renderSide(null);
+}
+
+function render() {
+  renderSummary();
+  renderTreemap();
+  renderSide(selectedSido);
+}
+
+// ── 초기화 ──
+renderSummary();
+renderTreemap();
+renderSide(null);
+window.addEventListener('resize', () => { renderTreemap(); });
+</script>
+</body>
+</html>
