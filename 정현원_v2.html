@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시도교육청 정현원 통계 대시보드 — 2024년 12월</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f5f3;--surface:#ffffff;--surface2:#f0efeb;--surface3:#e8e7e2;
+  --txt:#2C2C2A;--txt2:#5F5E5A;--txt3:#888780;
+  --border:rgba(0,0,0,0.10);--border2:rgba(0,0,0,0.18);
+  --blue:#185FA5;--blue-dark:#042C53;--blue-light:#85B7EB;--blue-pale:#E6F1FB;
+  --green:#1D9E75;--amber:#BA7517;--gray:#888780;--coral:#D85A30;--red:#E24B4A;
+  --radius:8px;--radius-lg:12px;
+  --cb-bg:#E6F1FB;--cb-txt:#0C447C;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#181816;--surface:#222220;--surface2:#2a2a28;--surface3:#323230;
+    --txt:#e5e5e3;--txt2:#a8a7a3;--txt3:#6e6d69;
+    --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.18);
+    --blue-pale:#0C447C;--cb-bg:#0C447C;--cb-txt:#B5D4F4;
+  }
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;background:var(--bg);color:var(--txt);line-height:1.6;font-size:14px}
+
+/* ── 헤더 ── */
+header{background:var(--surface);border-bottom:0.5px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
+.logo{font-size:15px;font-weight:500;display:flex;align-items:center;gap:10px}
+.logo-badge{background:var(--blue);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px}
+.header-meta{font-size:12px;color:var(--txt3)}
+
+/* ── 사이드바 ── */
+.layout{display:flex;min-height:calc(100vh - 56px)}
+aside{width:200px;flex-shrink:0;background:var(--surface);border-right:0.5px solid var(--border);padding:1rem 0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto}
+.aside-section{margin-bottom:.25rem}
+.aside-label{font-size:10px;font-weight:500;color:var(--txt3);letter-spacing:.08em;text-transform:uppercase;padding:.5rem 1.25rem .25rem}
+.aside-btn{display:block;width:100%;text-align:left;padding:.5rem 1.25rem;font-size:13px;color:var(--txt2);background:transparent;border:none;cursor:pointer;border-left:2px solid transparent;transition:all .12s}
+.aside-btn:hover{background:var(--surface2);color:var(--txt)}
+.aside-btn.active{color:var(--blue);background:var(--blue-pale);border-left-color:var(--blue);font-weight:500}
+
+/* ── 메인 콘텐츠 ── */
+main{flex:1;padding:1.5rem 2rem 3rem;overflow-x:hidden;max-width:1100px}
+.page{display:none}.page.active{display:block}
+.page-title{font-size:17px;font-weight:500;margin-bottom:.25rem}
+.page-sub{font-size:12px;color:var(--txt3);margin-bottom:1.5rem}
+
+/* ── 카드 ── */
+.card{background:var(--surface);border-radius:var(--radius-lg);border:0.5px solid var(--border);padding:1.25rem 1.5rem;margin-bottom:1rem}
+.card-title{font-size:13px;font-weight:500;color:var(--txt);margin-bottom:4px}
+.card-sub{font-size:11px;color:var(--txt3);margin-bottom:10px}
+.note{font-size:11px;color:var(--txt3);margin-top:6px;line-height:1.5}
+
+/* ── 그리드 ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.full{grid-column:1/-1}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+/* ── KPI 카드 ── */
+.kpi-wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1rem}
+.kpi{background:var(--surface2);border-radius:var(--radius);padding:.9rem 1rem;text-align:center}
+.kpi .v{font-size:20px;font-weight:500}
+.kpi .l{font-size:11px;color:var(--txt2);margin-top:2px}
+.kpi .c{font-size:11px;font-weight:500;margin-top:3px}
+.pos{color:var(--green)}.neg{color:var(--red)}
+
+/* ── 충북 강조 행 ── */
+.cb-row td{background:var(--cb-bg)!important;color:var(--cb-txt)!important;font-weight:500}
+
+/* ── 테이블 ── */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{color:var(--txt2);font-weight:500;text-align:right;padding:6px 8px;border-bottom:0.5px solid var(--border);white-space:nowrap}
+.tbl th:first-child{text-align:left}
+.tbl td{padding:5px 8px;text-align:right;border-bottom:0.5px solid var(--border)}
+.tbl td:first-child{text-align:left;font-weight:500}
+.tbl tr.avg td{background:var(--surface2);color:var(--txt2);font-style:italic}
+
+/* ── 레전드 ── */
+.leg{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--txt2);margin-bottom:8px}
+.leg span{display:flex;align-items:center;gap:4px}
+.leg i{width:9px;height:9px;border-radius:2px;display:inline-block;flex-shrink:0}
+
+/* ── 차트 래퍼 ── */
+.cw{position:relative;width:100%}
+
+/* ── 섹션 구분선 ── */
+.divider{height:0.5px;background:var(--border);margin:1.5rem 0}
+
+/* ── 탭 ── */
+.tab-row{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.tab-row button{font-size:12px;padding:5px 14px;border-radius:var(--radius);border:0.5px solid var(--border2);background:transparent;color:var(--txt2);cursor:pointer}
+.tab-row button.active{background:var(--blue-pale);color:var(--blue);border-color:transparent;font-weight:500}
+.sub{display:none}.sub.active{display:block}
+
+select{font-size:13px;padding:6px 10px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--surface);color:var(--txt);margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span>시도교육청 정현원 통계 대시보드</span>
+    <span class="logo-badge">2024년 12월</span>
+  </div>
+  <div class="header-meta">16개 시도 · 제주 제외 · 지방공무원 기준</div>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="aside-section">
+    <div class="aside-label">전국 현황</div>
+    <button class="aside-btn active" onclick="nav(0)">① 시도별 총정원</button>
+    <button class="aside-btn" onclick="nav(1)">② 직급별 정원</button>
+    <button class="aside-btn" onclick="nav(2)">③ 시도별 직급분포</button>
+    <button class="aside-btn" onclick="nav(3)">④ 5급이상 비율</button>
+    <button class="aside-btn" onclick="nav(4)">⑤ 기관구분 구성비</button>
+  </div>
+  <div class="aside-section">
+    <div class="aside-label">충북 중심 분석</div>
+    <button class="aside-btn" onclick="nav(5)">⑥ 충북 종합 비교</button>
+    <button class="aside-btn" onclick="nav(6)">⑦ 각급학교 심층</button>
+  </div>
+  <div class="aside-section">
+    <div class="aside-label">보고서 연계</div>
+    <button class="aside-btn" onclick="nav(7)">⑧ 기관별 정원 추이</button>
+  </div>
+</aside>
+
+<main>
+
+<!-- ① 시도별 총정원 -->
+<div id="p0" class="page active">
+  <div class="page-title">시도별 총정원</div>
+  <div class="page-sub">16개 시도교육청 지방공무원 정원 현황 (2024년 12월 기준)</div>
+  <div class="kpi-wrap">
+    <div class="kpi"><div class="v">73,071</div><div class="l">전국 총정원</div></div>
+    <div class="kpi"><div class="v">3,157</div><div class="l">시 평균</div></div>
+    <div class="kpi"><div class="v">5,977</div><div class="l">도 평균</div></div>
+    <div class="kpi"><div class="v" style="color:var(--blue)">3,459</div><div class="l">충북</div><div class="c">전국 11위</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">시도별 총정원 빈도표</div>
+    <table class="tbl"><thead><tr><th>지역</th><th>정원(명)</th><th>비율(%)</th><th>누적(%)</th></tr></thead><tbody id="t1"></tbody></table>
+  </div>
+  <div class="card">
+    <div class="card-title">트리맵</div>
+    <div id="treemap1" style="width:100%;height:400px"></div>
+  </div>
+</div>
+
+<!-- ② 직급별 정원 -->
+<div id="p1" class="page">
+  <div class="page-title">시도별 직급별 정원</div>
+  <div class="page-sub">교육감~9급 전 직급 시도별 분포</div>
+  <div class="card">
+    <div class="card-title">시도별 직급별 정원 (히트맵)</div>
+    <div style="overflow-x:auto"><table class="tbl" id="htbl"></table></div>
+  </div>
+  <div class="card">
+    <div class="card-title">누적 가로 막대</div>
+    <div class="leg" id="leg1"></div>
+    <div class="cw" style="height:580px"><canvas id="ch1"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">직급별 전체 규모 — 트리맵</div>
+    <div id="treemap2" style="width:100%;height:340px"></div>
+  </div>
+</div>
+
+<!-- ③ 시도별 직급분포 -->
+<div id="p2" class="page">
+  <div class="page-title">시도별 직급분포</div>
+  <div class="page-sub">2~4급 / 5급 / 6급 / 7급 / 8~9급 5구간 분석</div>
+  <div class="card">
+    <div class="card-title">시도 선택</div>
+    <select id="rsel"></select>
+    <table class="tbl" id="rtbl"></table>
+    <div class="cw" style="height:280px;margin-top:1rem"><canvas id="rch"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">16개 시도 전체 누적 100% 가로 막대</div>
+    <div class="leg" id="leg2"></div>
+    <div class="cw" style="height:880px"><canvas id="rch2"></canvas></div>
+  </div>
+</div>
+
+<!-- ④ 5급이상 비율 -->
+<div id="p3" class="page">
+  <div class="page-title">5급 이상 상위직급 비율</div>
+  <div class="page-sub">전체 정원 기준 / 학교 제외 기준 비교</div>
+  <div class="tab-row">
+    <button class="active" onclick="sw4(0)">전체 정원 기준</button>
+    <button onclick="sw4(1)">학교 제외 기준</button>
+    <button onclick="sw4(2)">두 지표 비교</button>
+  </div>
+  <div id="p3_0" class="sub active">
+    <div class="card"><div class="card-title">빈도표</div><table class="tbl" id="t40"></table></div>
+    <div class="card"><div class="cw" style="height:820px"><canvas id="c40"></canvas></div></div>
+  </div>
+  <div id="p3_1" class="sub">
+    <div class="card"><div class="card-title">빈도표 (학교 제외)</div><table class="tbl" id="t41"></table></div>
+    <div class="card"><div class="cw" style="height:820px"><canvas id="c41"></canvas></div></div>
+  </div>
+  <div id="p3_2" class="sub">
+    <div class="card"><div class="card-title">두 지표 비교표</div><table class="tbl" id="t42"></table></div>
+    <div class="card"><div class="leg"><span><i style="background:#185FA5"></i>전체 기준</span><span><i style="background:#1D9E75"></i>학교 제외 기준</span></div><div class="cw" style="height:860px"><canvas id="c42"></canvas></div></div>
+  </div>
+</div>
+
+<!-- ⑤ 기관구분 구성비 -->
+<div id="p4" class="page">
+  <div class="page-title">기관구분별 정원 구성비</div>
+  <div class="page-sub">본청 · 교육지원청 · 직속기관 · 각급학교 · 의회사무처</div>
+  <div class="card"><div class="card-title">빈도표</div><div style="overflow-x:auto"><table class="tbl" id="t5"></table></div></div>
+  <div class="card">
+    <div class="card-title">누적 100% 가로 막대</div>
+    <div class="leg" id="leg5"></div>
+    <div class="cw" style="height:880px"><canvas id="c5"></canvas></div>
+  </div>
+</div>
+
+<!-- ⑥ 충북 종합 비교 -->
+<div id="p5" class="page">
+  <div class="page-title">충북 종합 비교</div>
+  <div class="page-sub">충북 / 시(8개) / 도(8개) / 전국(16개) 기준</div>
+  <div class="kpi-wrap">
+    <div class="kpi"><div class="v" style="color:var(--blue)">3,459</div><div class="l">충북 총정원</div><div class="c">전국 11위</div></div>
+    <div class="kpi"><div class="v">3,157</div><div class="l">시 평균</div></div>
+    <div class="kpi"><div class="v">5,977</div><div class="l">도 평균</div></div>
+    <div class="kpi"><div class="v">4,567</div><div class="l">전국 평균</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">총정원 비교</div>
+    <div class="cw" style="height:240px"><canvas id="c6a"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">직급 5구간 구성비</div>
+      <div class="leg" id="leg6b"></div>
+      <div class="cw" style="height:200px"><canvas id="c6b"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">5급이상 비율 비교</div>
+      <div class="cw" style="height:200px"><canvas id="c6c"></canvas></div>
+      <p class="note">실선: 전체 기준 / 점선: 학교제외 기준</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">기관구분 구성비 비교</div>
+    <div class="leg" id="leg6d"></div>
+    <div class="cw" style="height:200px"><canvas id="c6d"></canvas></div>
+  </div>
+</div>
+
+<!-- ⑦ 각급학교 심층 -->
+<div id="p6" class="page">
+  <div class="page-title">각급학교 심층 분석</div>
+  <div class="page-sub">충북 중심 — 학교 비중 · 학교급별 · 직급구성</div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">총정원 대비 학교 비중</div>
+      <table class="tbl">
+        <thead><tr><th>구분</th><th>총정원</th><th>학교정원</th><th>비중(%)</th></tr></thead>
+        <tbody>
+          <tr class="cb-row"><td>충북</td><td>3,459</td><td>1,909</td><td>55.2</td></tr>
+          <tr><td>시(8개) 평균</td><td>3,157</td><td>1,728</td><td>54.7</td></tr>
+          <tr><td>도(8개) 평균</td><td>5,977</td><td>3,447</td><td>57.7</td></tr>
+          <tr><td>전국 평균</td><td>4,567</td><td>2,588</td><td>56.7</td></tr>
+        </tbody>
+      </table>
+      <div class="cw" style="height:180px;margin-top:10px"><canvas id="c7a"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">각급학교 직급구성 비교</div>
+      <table class="tbl">
+        <thead><tr><th>구분</th><th>5급(%)</th><th>6급(%)</th><th>7급(%)</th><th>8~9급(%)</th></tr></thead>
+        <tbody>
+          <tr class="cb-row"><td>충북</td><td>2.7</td><td>24.9</td><td>32.1</td><td>40.3</td></tr>
+          <tr><td>시 평균</td><td>3.6</td><td>24.5</td><td>31.7</td><td>40.1</td></tr>
+          <tr><td>도 평균</td><td>3.5</td><td>27.6</td><td>31.7</td><td>37.2</td></tr>
+          <tr><td>전국 평균</td><td>3.6</td><td>26.6</td><td>31.7</td><td>38.1</td></tr>
+        </tbody>
+      </table>
+      <div class="cw" style="height:180px;margin-top:10px"><canvas id="c7b"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">학교급별 구성비 비교</div>
+    <div class="leg" id="leg7c"></div>
+    <div class="cw" style="height:200px"><canvas id="c7c"></canvas></div>
+    <p class="note">* 충북은 초등 비중(56.8%)이 타 비교군보다 높고 중학교(18.9%) 비중이 낮은 편</p>
+  </div>
+  <div class="card">
+    <div class="card-title">충북 학교급별 직급 구성</div>
+    <div class="leg" id="leg7d"></div>
+    <div class="cw" style="height:300px"><canvas id="c7d"></canvas></div>
+    <p class="note">* 초등·유치원은 8~9급 집중 / 중·고등학교는 6~7급 중심 구조</p>
+  </div>
+</div>
+
+<!-- ⑧ 보고서 연계: 기관별 정원 추이 -->
+<div id="p7" class="page">
+  <div class="page-title">기관별 정원 추이 (2020~2024)</div>
+  <div class="page-sub">보고서 표Ⅱ-1~5 연계 — 충북 · 시평균 · 도평균 · 전국 비교</div>
+  <div class="kpi-wrap">
+    <div class="kpi"><div class="v" style="color:var(--green)">+20.3%</div><div class="l">본청 (충북 5년)</div></div>
+    <div class="kpi"><div class="v" style="color:var(--green)">+6.8%</div><div class="l">교육지원청 (충북 5년)</div></div>
+    <div class="kpi"><div class="v" style="color:var(--red)">-1.4%</div><div class="l">직속기관 (충북 5년)</div></div>
+    <div class="kpi"><div class="v" style="color:var(--green)">+1.5%</div><div class="l">각급학교 (충북 5년)</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">충북 기관구분별 정원 구성 변화 (2020→2024)</div>
+    <div class="cw" style="height:300px"><canvas id="c8main"></canvas></div>
+    <p class="note">* 행정기관 중심 증가 — 각급학교 비중은 상대적으로 감소 추세</p>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">본청 전년 대비 증감률</div>
+      <div class="cw" style="height:200px"><canvas id="c8a"></canvas></div>
+      <p class="note">충북 '23-'24 +7.7% — 시 평균(+2.5%)의 3배</p>
+    </div>
+    <div class="card">
+      <div class="card-title">교육지원청 전년 대비 증감률</div>
+      <div class="cw" style="height:200px"><canvas id="c8b"></canvas></div>
+      <p class="note">충북 '23-'24 -0.5% — 전국(+5.7%)과 역방향</p>
+    </div>
+    <div class="card">
+      <div class="card-title">직속기관 전년 대비 증감률</div>
+      <div class="cw" style="height:200px"><canvas id="c8c"></canvas></div>
+      <p class="note">충북 '23-'24 -5.9% — 2022년 이후 지속 감소</p>
+    </div>
+    <div class="card">
+      <div class="card-title">각급학교 전년 대비 증감률</div>
+      <div class="cw" style="height:200px"><canvas id="c8d"></canvas></div>
+      <p class="note">충북 +0.8% — 전국 감소세 속 소폭 증가</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">충북 행정기관 vs 학교 정원·현원 추이 (2019~2023)</div>
+    <div class="cw" style="height:260px"><canvas id="c8e"></canvas></div>
+    <p class="note">* 행정기관 +155명(+11.1%) vs 학교 +2명(+0.1%) — 5년간 격차 확대</p>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">충북 학교급별 정원 추이</div>
+      <div class="cw" style="height:220px"><canvas id="c8f"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">충북 기관구분별 구성비 변화</div>
+      <div class="cw" style="height:220px"><canvas id="c8g"></canvas></div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+Chart.register(ChartDataLabels);
+
+/* ══ 공통 설정 ══ */
+const isDark=matchMedia('(prefers-color-scheme:dark)').matches;
+const txtC=isDark?'#e5e5e3':'#2C2C2A';
+const gridC=isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.06)';
+const CB='#185FA5',SI='#1D9E75',DO_='#BA7517',NAT='#888780';
+const G5C=['#042C53','#185FA5','#85B7EB','#1D9E75','#9FE1CB'];
+const G5L=['2~4급','5급','6급','7급','8~9급'];
+const ORG_C=['#185FA5','#1D9E75','#BA7517','#D85A30','#888780'];
+const ORG_L=['본청','교육지원청','직속기관','각급학교','의회사무처'];
+const GDC=['#534AB7','#042C53','#0C447C','#185FA5','#378ADD','#85B7EB','#B5D4F4','#9FE1CB','#5DCAA5'];
+const GDL=['교육감','2급','3급','4급','5급','6급','7급','8급','9급'];
+const COMP4=['충북','시(8개) 평균','도(8개) 평균','전국(16개) 평균'];
+const YC=["'20-'21","'21-'22","'22-'23","'23-'24"];
+
+/* ══ 데이터 ══ */
+const AVG=['전국(16개)','시(8개)','도(8개)'];
+const REGS=['서울','부산','대구','인천','광주','대전','울산','세종','경기','강원','충북','충남','전북','전남','경북','경남'];
+const ALL=[...AVG,...REGS];
+const isAvg=r=>AVG.includes(r);
+
+const TOTAL={'전국(16개)':4566.9,'시(8개)':3156.5,'도(8개)':5977.4,'서울':7696,'부산':4020,'대구':2930,'인천':3676,'광주':1944,'대전':2057,'울산':1914,'세종':1015,'경기':14630,'강원':4140,'충북':3459,'충남':4405,'전북':4426,'전남':5382,'경북':5419,'경남':5958};
+
+const GD={'전국(16개)':[1,5,13,48,251,861,935,836,617],'시(8개)':[1,6,15,52,198,756,767,660,703],'도(8개)':[1,5,11,45,303,966,1103,1012,531],'서울':[1,1,29,87,415,2435,2674,2054,0],'부산':[1,0,20,54,226,1097,1505,1117,0],'대구':[1,0,14,50,179,805,956,909,16],'인천':[1,0,14,55,242,1193,1016,1155,0],'광주':[1,0,13,39,132,612,557,590,0],'대전':[1,0,11,41,139,623,552,690,0],'울산':[1,0,11,36,156,581,507,622,0],'세종':[1,0,5,26,98,367,276,242,0],'경기':[1,0,35,118,869,4932,5147,3528,0],'강원':[1,0,9,51,179,1275,1359,1266,0],'충북':[1,0,11,56,174,1023,1139,1055,0],'충남':[1,0,9,55,244,1194,1549,1353,0],'전북':[1,0,11,56,193,1394,1652,1119,0],'전남':[1,0,11,70,248,1557,1410,1598,487],'경북':[1,0,12,63,228,1388,1715,2012,0],'경남':[1,0,12,70,292,1591,1942,2050,0]};
+
+const G5D={'전국(16개)':[72,251,1379,1497,1366],'시(8개)':[63,198,964,1005,924],'도(8개)':[81,303,1794,1989,1808],'서울':[117,415,2435,2674,2054],'부산':[74,226,1097,1505,1117],'대구':[64,179,805,956,925],'인천':[69,242,1193,1016,1155],'광주':[52,132,612,557,590],'대전':[52,139,623,552,690],'울산':[47,156,581,507,622],'세종':[31,98,367,276,242],'경기':[153,869,4932,5147,3528],'강원':[60,179,1275,1359,1266],'충북':[67,174,1023,1139,1055],'충남':[64,244,1194,1549,1353],'전북':[67,193,1394,1652,1119],'전남':[81,248,1557,1410,2085],'경북':[75,228,1388,1715,2012],'경남':[82,292,1591,1942,2050]};
+function pct5(r){const d=G5D[r],s=d.reduce((a,b)=>a+b,0);return d.map(v=>s>0?+(v/s*100).toFixed(1):0);}
+
+const D4={'전국(16개)':{tot:4566.9,hi:324.1,r1:7.77,ntot:1979.3,nhi:231.9,r2:12.84},'시(8개)':{tot:3156.5,hi:262.6,r1:9.20,ntot:1428.6,nhi:200.2,r2:15.00},'도(8개)':{tot:5977.4,hi:385.5,r1:6.34,ntot:2530.0,nhi:263.5,r2:10.67},'서울':{tot:7696,hi:533,r1:6.93,ntot:3176,nhi:402,r2:12.66},'부산':{tot:4020,hi:301,r1:7.49,ntot:1755,nhi:216,r2:12.31},'대구':{tot:2930,hi:244,r1:8.33,ntot:1468,nhi:193,r2:13.15},'인천':{tot:3676,hi:312,r1:8.49,ntot:1577,nhi:219,r2:13.89},'광주':{tot:1944,hi:185,r1:9.52,ntot:1023,nhi:157,r2:15.35},'대전':{tot:2057,hi:192,r1:9.33,ntot:967,nhi:150,r2:15.51},'울산':{tot:1914,hi:204,r1:10.66,ntot:931,nhi:157,r2:16.86},'세종':{tot:1015,hi:130,r1:12.81,ntot:532,nhi:108,r2:20.30},'경기':{tot:14630,hi:1023,r1:6.99,ntot:5853,nhi:549,r2:9.38},'강원':{tot:4140,hi:240,r1:5.80,ntot:1941,nhi:187,r2:9.63},'충북':{tot:3459,hi:242,r1:7.00,ntot:1550,nhi:190,r2:12.26},'충남':{tot:4405,hi:309,r1:7.01,ntot:2070,nhi:212,r2:10.24},'전북':{tot:4426,hi:261,r1:5.90,ntot:1923,nhi:203,r2:10.56},'전남':{tot:5382,hi:330,r1:6.13,ntot:2314,nhi:262,r2:11.32},'경북':{tot:5419,hi:304,r1:5.61,ntot:2246,nhi:220,r2:9.80},'경남':{tot:5958,hi:375,r1:6.29,ntot:2343,nhi:285,r2:12.16}};
+
+const ORG_D={'전국(16개)':[540,1003,428,2588,8],'시(8개)':[517,464,441,1728,7],'도(8개)':[563,1542,415,3447,10],'서울':[779,1364,1027,4520,6],'부산':[598,589,559,2265,9],'대구':[519,444,505,1462,0],'인천':[609,528,431,2099,9],'광주':[417,279,321,921,6],'대전':[437,271,250,1090,9],'울산':[431,238,254,983,8],'세종':[346,0,180,483,6],'경기':[1085,4076,671,8777,21],'강원':[407,1129,398,2199,7],'충북':[420,772,349,1909,9],'충남':[496,1189,375,2335,10],'전북':[534,1020,360,2503,9],'전남':[529,1345,432,3068,8],'경북':[483,1416,340,3173,7],'경남':[550,1391,397,3615,5]};
+
+/* ══ 유틸 ══ */
+const charts={};
+function dc(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+function mkLeg(id,labels,colors){document.getElementById(id).innerHTML=labels.map((l,i)=>`<span><i style="background:${colors[i]}"></i>${l}</span>`).join('');}
+const dlCenter={color:'#fff',font:{size:10,weight:'500'},anchor:'center',align:'center',clamp:true,formatter:v=>v>=4?v.toFixed(1)+'%':''};
+const dlEndLeft={color:'#fff',font:{size:10,weight:'500'},anchor:'end',align:'left',clamp:true,formatter:v=>v.toFixed(1)+'%'};
+
+function mkStacked(id,labels,datasets,h){
+  dc(id);charts[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},datalabels:dlCenter,tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`}}},scales:{x:{stacked:true,min:0,max:100,ticks:{color:txtC,callback:v=>v+'%'},grid:{color:gridC}},y:{stacked:true,ticks:{color:txtC,font:{size:11},callback:(v,i)=>{const l=labels[i];return isAvg(l)?'▶ '+l:l;}}}}}});
+}
+
+/* ══ 내비게이션 ══ */
+const rendered={};
+function nav(i){
+  document.querySelectorAll('.page').forEach((p,j)=>p.classList.toggle('active',i===j));
+  document.querySelectorAll('.aside-btn').forEach((b,j)=>b.classList.toggle('active',i===j));
+  window.scrollTo(0,0);
+  if(rendered[i])return;rendered[i]=true;
+  [b0,b1,b2,b3,b4,b5,b6,b7][i]();
+}
+
+/* ══ ① 총정원 ══ */
+function b0(){
+  const grand=73071,sR=[...REGS].sort((a,b)=>TOTAL[b]-TOTAL[a]);
+  const tb=document.getElementById('t1');let cum=0;
+  [['전국(16개)',4566.9],['시(8개)',3156.5],['도(8개)',5977.4]].forEach(([r,v])=>{
+    const tr=tb.insertRow();tr.className='avg';
+    tr.innerHTML=`<td>${r}</td><td>${v.toFixed(1)}</td><td>—</td><td>—</td>`;
+  });
+  sR.forEach(r=>{
+    const v=TOTAL[r],p=v/grand*100;cum+=p;
+    const tr=tb.insertRow();
+    if(r==='충북')tr.className='cb-row';
+    tr.innerHTML=`<td>${r}</td><td>${v.toLocaleString()}</td><td>${p.toFixed(2)}</td><td>${cum.toFixed(2)}</td>`;
+  });
+  const el=document.getElementById('treemap1');
+  const W=el.offsetWidth||900,H=400;
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H);
+  const root=d3.hierarchy({children:REGS.map(r=>({r,v:TOTAL[r]}))}).sum(d=>d.v);
+  d3.treemap().size([W,H]).padding(2).round(true)(root);
+  const cs=d3.scaleSequential([0,TOTAL['경기']],d3.interpolateBlues);
+  const cell=svg.selectAll('g').data(root.leaves()).join('g').attr('transform',d=>`translate(${d.x0},${d.y0})`);
+  cell.append('rect').attr('width',d=>d.x1-d.x0).attr('height',d=>d.y1-d.y0).attr('rx',3).attr('fill',d=>cs(d.data.v)).attr('stroke',d=>d.data.r==='충북'?'#FFD700':'none').attr('stroke-width',d=>d.data.r==='충북'?2:0);
+  cell.each(function(d){
+    const w=d.x1-d.x0,h=d.y1-d.y0,g=d3.select(this),lt=d.data.v<TOTAL['경기']*0.25;
+    if(w>34&&h>20)g.append('text').attr('x',5).attr('y',15).attr('font-size',Math.min(13,w/3.5)).attr('font-weight','500').attr('fill',lt?'#042C53':'#fff').text(d.data.r);
+    if(w>50&&h>34)g.append('text').attr('x',5).attr('y',28).attr('font-size',Math.min(11,w/5)).attr('fill',lt?'#185FA5':'rgba(255,255,255,.85)').text(d.data.v.toLocaleString()+'명');
+    if(w>68&&h>46)g.append('text').attr('x',5).attr('y',40).attr('font-size',10).attr('fill',lt?'#378ADD':'rgba(255,255,255,.65)').text((d.data.v/grand*100).toFixed(1)+'%');
+  });
+}
+
+/* ══ ② 직급별 ══ */
+function b1(){
+  const tbl=document.getElementById('htbl');
+  tbl.innerHTML=`<thead><tr><th style="text-align:left">지역</th>${GDL.map(g=>`<th>${g}</th>`).join('')}<th>합계</th></tr></thead>`;
+  const tb=tbl.createTBody();
+  const maxV=Math.max(...ALL.flatMap(r=>GD[r].slice(1)));
+  ALL.forEach(r=>{
+    const d=GD[r],tot=d.reduce((a,b)=>a+b,0),tr=tb.insertRow();
+    if(isAvg(r))tr.className='avg';if(r==='충북')tr.className='cb-row';
+    tr.innerHTML=`<td>${r}</td>${d.map((v,i)=>{
+      if(i===0)return`<td>${v}</td>`;
+      const pct=v/maxV,bg=v>0?`rgba(24,95,165,${0.1+pct*0.75})`:'transparent',col=pct>0.5?'#fff':'inherit';
+      return`<td style="background:${bg};color:${v>0&&pct>0.5?col:'inherit'}">${Math.round(v).toLocaleString()}</td>`;
+    }).join('')}<td style="font-weight:500">${Math.round(tot).toLocaleString()}</td>`;
+  });
+  mkLeg('leg1',GDL,GDC);
+  dc('ch1');charts['ch1']=new Chart(document.getElementById('ch1'),{type:'bar',data:{labels:ALL,datasets:GDL.map((g,gi)=>({label:g,data:ALL.map(r=>GD[r][gi]),backgroundColor:GDC[gi],stack:'a'}))},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},datalabels:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString()}명`}}},scales:{x:{stacked:true,ticks:{color:txtC,callback:v=>v.toLocaleString()},grid:{color:gridC}},y:{stacked:true,ticks:{color:txtC,font:{size:11},callback:(v,i)=>{const l=ALL[i];return isAvg(l)?'▶ '+l:l;}}}}}});
+  const el2=document.getElementById('treemap2');
+  const items2=GDL.slice(1).map((g,i)=>({g,v:REGS.reduce((s,r)=>s+GD[r][i+1],0)}));
+  const W2=el2.offsetWidth||900,H2=340;
+  const svg2=d3.select(el2).append('svg').attr('width',W2).attr('height',H2);
+  const root2=d3.hierarchy({children:items2}).sum(d=>d.v);
+  d3.treemap().size([W2,H2]).padding(2).round(true)(root2);
+  const cs2=d3.scaleOrdinal(GDC.slice(1));
+  const gT=items2.reduce((s,d)=>s+d.v,0);
+  const cell2=svg2.selectAll('g').data(root2.leaves()).join('g').attr('transform',d=>`translate(${d.x0},${d.y0})`);
+  cell2.append('rect').attr('width',d=>d.x1-d.x0).attr('height',d=>d.y1-d.y0).attr('rx',3).attr('fill',d=>cs2(d.data.g));
+  cell2.each(function(d){const w=d.x1-d.x0,h=d.y1-d.y0,g=d3.select(this);if(w>30&&h>20)g.append('text').attr('x',5).attr('y',15).attr('font-size',Math.min(13,w/3)).attr('font-weight','500').attr('fill','#fff').text(d.data.g);if(w>48&&h>32)g.append('text').attr('x',5).attr('y',27).attr('font-size',10).attr('fill','rgba(255,255,255,.85)').text(d.data.v.toLocaleString()+'명');if(w>64&&h>44)g.append('text').attr('x',5).attr('y',38).attr('font-size',9).attr('fill','rgba(255,255,255,.65)').text((d.data.v/gT*100).toFixed(1)+'%');});
+}
+
+/* ══ ③ 직급분포 ══ */
+let rch1=null;
+function b2(){
+  const sel=document.getElementById('rsel');
+  ALL.forEach(r=>{const o=document.createElement('option');o.value=r;o.text=r;if(r==='충북')o.selected=true;sel.appendChild(o);});
+  sel.addEventListener('change',()=>updateR(sel.value));
+  mkLeg('leg2',G5L,G5C);
+  mkStacked('rch2',ALL,G5L.map((g,gi)=>({label:g,data:ALL.map(r=>pct5(r)[gi]),backgroundColor:G5C[gi],stack:'a'})),880);
+  updateR('충북');
+}
+function updateR(r){
+  const d=G5D[r],tot=d.reduce((a,b)=>a+b,0);
+  const tbl=document.getElementById('rtbl');
+  tbl.innerHTML=`<thead><tr><th>직급구간</th><th>정원(명)</th><th>비율(%)</th></tr></thead>`;
+  const tb=tbl.createTBody();
+  G5L.forEach((g,i)=>{if(d[i]===0)return;const tr=tb.insertRow();tr.innerHTML=`<td>${g}</td><td>${isAvg(r)?d[i].toFixed(1):d[i].toLocaleString()}</td><td>${(d[i]/tot*100).toFixed(2)}</td>`;});
+  const tt=tb.insertRow();tt.className='avg';tt.innerHTML=`<td>합계</td><td>${isAvg(r)?tot.toFixed(1):tot.toLocaleString()}</td><td>100.00</td>`;
+  if(rch1)rch1.destroy();
+  rch1=new Chart(document.getElementById('rch'),{type:'bar',data:{labels:G5L,datasets:[{data:d.map(v=>+(v/tot*100).toFixed(1)),backgroundColor:G5C,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{color:'#fff',font:{size:12,weight:'500'},anchor:'center',align:'center',formatter:v=>v>0?v.toFixed(1)+'%':''},tooltip:{callbacks:{label:ctx=>`${ctx.raw.toFixed(1)}% (${isAvg(r)?d[ctx.dataIndex].toFixed(1):d[ctx.dataIndex]}명)`}}},scales:{x:{ticks:{color:txtC},grid:{display:false}},y:{max:50,ticks:{color:txtC,callback:v=>v+'%'},grid:{color:gridC}}}}});
+}
+
+/* ══ ④ 5급이상 ══ */
+const t4r={};
+function sw4(i){
+  document.querySelectorAll('.tab-row button').forEach((b,j)=>b.classList.toggle('active',i===j));
+  document.querySelectorAll('#p3 .sub').forEach((p,j)=>p.classList.toggle('active',i===j));
+  if(t4r[i])return;t4r[i]=true;
+  if(i===0)mk4_0();if(i===1)mk4_1();if(i===2)mk4_2();
+}
+function b3(){mk4_0();t4r[0]=true;}
+const s4r1=[...ALL].sort((a,b)=>D4[b].r1-D4[a].r1);
+const s4r2=[...ALL].sort((a,b)=>D4[b].r2-D4[a].r2);
+function mkFreq4(tbId,labels,tKey,hKey,rKey,color){
+  const tbl=document.getElementById(tbId);tbl.innerHTML=`<thead><tr><th>지역</th><th>정원(명)</th><th>5급이상(명)</th><th>비율(%)</th></tr></thead>`;
+  const tb=tbl.createTBody();
+  labels.forEach(r=>{const d=D4[r],tr=tb.insertRow();if(isAvg(r))tr.className='avg';if(r==='충북')tr.className='cb-row';tr.innerHTML=`<td>${r}</td><td>${d[tKey].toLocaleString()}</td><td>${d[hKey].toLocaleString()}</td><td>${d[rKey].toFixed(2)}</td>`;});
+}
+function mkBar4(id,labels,rKey,color,avg,maxX){
+  dc(id);charts[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{label:'비율',data:labels.map(r=>D4[r][rKey]),backgroundColor:labels.map(r=>r==='충북'?'#FFD700':isAvg(r)?color+'88':color),borderRadius:3,barThickness:22,datalabels:{color:ctx=>ctx.dataIndex===labels.indexOf('충북')?'#000':'#fff',font:{size:11,weight:'500'},anchor:'end',align:'left',clamp:true,formatter:v=>v.toFixed(2)+'%'}},{label:'전국평균',data:labels.map(()=>avg),type:'line',borderColor:'#D85A30',borderWidth:1.5,pointRadius:0,borderDash:[5,4],datalabels:{display:false}}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.datasetIndex===0?`${ctx.raw.toFixed(2)}%`:''}}},scales:{x:{min:0,max:maxX,ticks:{color:txtC,callback:v=>v+'%'},grid:{color:gridC}},y:{ticks:{color:txtC,font:{size:11},callback:(v,i)=>{const l=labels[i];return isAvg(l)?'▶ '+l:l==='충북'?'★ 충북':l;}}}}}});
+}
+function mk4_0(){mkFreq4('t40',s4r1,'tot','hi','r1','#185FA5');mkBar4('c40',s4r1,'r1','#185FA5',7.77,16);}
+function mk4_1(){mkFreq4('t41',s4r2,'ntot','nhi','r2','#1D9E75');mkBar4('c41',s4r2,'r2','#1D9E75',12.84,25);}
+function mk4_2(){
+  const tbl=document.getElementById('t42');tbl.innerHTML=`<thead><tr><th>지역</th><th>전체(%)</th><th>학교제외(%)</th><th>차이(%p)</th></tr></thead>`;
+  const tb=tbl.createTBody();
+  ALL.forEach(r=>{const d=D4[r],diff=d.r2-d.r1,tr=tb.insertRow();if(isAvg(r))tr.className='avg';if(r==='충북')tr.className='cb-row';tr.innerHTML=`<td>${r}</td><td>${d.r1.toFixed(2)}</td><td>${d.r2.toFixed(2)}</td><td style="font-weight:500;color:${diff>6?'#A32D2D':'inherit'}">+${diff.toFixed(2)}</td>`;});
+  dc('c42');charts['c42']=new Chart(document.getElementById('c42'),{type:'bar',data:{labels:ALL,datasets:[{label:'전체',data:ALL.map(r=>D4[r].r1),backgroundColor:ALL.map(r=>r==='충북'?'#FFD700':'#185FA5'),borderRadius:3,barThickness:13},{label:'학교제외',data:ALL.map(r=>D4[r].r2),backgroundColor:ALL.map(r=>r==='충북'?'#FFB700':'#1D9E75'),borderRadius:3,barThickness:13}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},datalabels:{color:ctx=>ctx.dataIndex===ALL.indexOf('충북')?'#000':'#fff',font:{size:9,weight:'500'},anchor:'end',align:'left',clamp:true,formatter:v=>v.toFixed(1)+'%'},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(2)}%`}}},scales:{x:{min:0,max:25,ticks:{color:txtC,callback:v=>v+'%'},grid:{color:gridC}},y:{ticks:{color:txtC,font:{size:11},callback:(v,i)=>{const l=ALL[i];return isAvg(l)?'▶ '+l:l==='충북'?'★ 충북':l;}}}}}});
+}
+
+/* ══ ⑤ 기관구분 ══ */
+function b4(){
+  const tbl=document.getElementById('t5');tbl.innerHTML=`<thead><tr><th>지역</th>${ORG_L.map(c=>`<th>${c}</th>`).join('')}<th>합계</th></tr></thead>`;
+  const tb=tbl.createTBody();
+  ALL.forEach(r=>{const d=ORG_D[r],sum=d.reduce((a,b)=>a+b,0),tr=tb.insertRow();if(isAvg(r))tr.className='avg';if(r==='충북')tr.className='cb-row';tr.innerHTML=`<td>${r}</td>${d.map((v,i)=>`<td>${Math.round(v).toLocaleString()} <span style="color:var(--txt3);font-size:10px">(${sum>0?(v/sum*100).toFixed(1):0}%)</span></td>`).join('')}<td style="font-weight:500">${Math.round(sum).toLocaleString()}</td>`;});
+  mkLeg('leg5',ORG_L,ORG_C);
+  mkStacked('c5',ALL,ORG_L.map((cat,ci)=>({label:cat,data:ALL.map(r=>{const d=ORG_D[r],s=d.reduce((a,b)=>a+b,0);return s>0?+(d[ci]/s*100).toFixed(1):0;}),backgroundColor:ORG_C[ci],stack:'a'})),880);
+}
+
+/* ══ ⑥ 충북 종합 ══ */
+function b5(){
+  dc('c6a');charts['c6a']=new Chart(document.getElementById('c6a'),{type:'bar',data:{labels:COMP4,datasets:[{data:[3459,3157,5977,4567],backgroundColor:['#185FA5','#1D9E75','#BA7517','#888780'],borderRadius:4,barThickness:48,datalabels:{color:'#fff',font:{size:12,weight:'500'},anchor:'center',align:'center',formatter:v=>v.toLocaleString()+'명'}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{},tooltip:{callbacks:{label:ctx=>`${ctx.raw.toLocaleString()}명`}}},scales:{x:{ticks:{color:txtC},grid:{display:false}},y:{ticks:{color:txtC,callback:v=>v.toLocaleString()},grid:{color:gridC}}}}});
+  mkLeg('leg6b',G5L,G5C);
+  const p5=COMP4.map(r=>r==='충북'?pct5('충북'):r==='시(8개) 평균'?pct5('시(8개)'):r==='도(8개) 평균'?pct5('도(8개)'):pct5('전국(16개)'));
+  mkStacked('c6b',COMP4,G5L.map((g,gi)=>({label:g,data:COMP4.map((_,li)=>p5[li][gi]),backgroundColor:G5C[gi],stack:'a'})),200);
+  dc('c6c');charts['c6c']=new Chart(document.getElementById('c6c'),{type:'bar',data:{labels:COMP4,datasets:[{label:'전체',data:[7.00,9.20,6.34,7.77],backgroundColor:['#185FA5','#1D9E75cc','#BA7517cc','#888780cc'],borderRadius:3,barThickness:22,datalabels:{color:'#fff',font:{size:11,weight:'500'},anchor:'center',align:'center',formatter:v=>v.toFixed(2)+'%'}},{label:'학교제외',data:[12.26,15.00,10.67,12.84],backgroundColor:['#85B7EB','#9FE1CBcc','#EF9F27cc','#B4B2A9cc'],borderRadius:3,barThickness:22,datalabels:{color:ctx=>ctx.dataIndex===0?'#042C53':'#fff',font:{size:11,weight:'500'},anchor:'center',align:'center',formatter:v=>v.toFixed(2)+'%'}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(2)}%`}}},scales:{x:{ticks:{color:txtC},grid:{display:false}},y:{ticks:{color:txtC,callback:v=>v+'%'},grid:{color:gridC}}}}});
+  mkLeg('leg6d',ORG_L,ORG_C);
+  const orgPct=[[12.1,22.3,10.1,55.2,0.3],[16.4,14.7,14.0,54.7,0.2],[9.4,25.8,6.9,57.7,0.2],[11.8,22.0,9.4,56.7,0.2]];
+  mkStacked('c6d',COMP4,ORG_L.map((o,oi)=>({label:o,data:COMP4.map((_,li)=>orgPct[li][oi]),backgroundColor:ORG_C[oi],stack:'a'})),200);
+}
+
+/* ══ ⑦ 각급학교 ══ */
+function b6(){
+  dc('c7a');charts['c7a']=new Chart(document.getElementById('c7a'),{type:'bar',data:{labels:COMP4,datasets:[{label:'각급학교',data:[55.2,54.7,57.7,56.7],backgroundColor:'#D85A30',stack:'a',datalabels:{color:'#fff',font:{size:11,weight:'500'},anchor:'center',align:'center',formatter:v=>v.toFixed(1)+'%'}},{label:'비학교',data:[44.8,45.3,42.3,43.3],backgroundColor:'#85B7EB',stack:'a',datalabels:{color:'#042C53',font:{size:11,weight:'500'},anchor:'center',align:'center',formatter:v=>v.toFixed(1)+'%'}}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},datalabels:{},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`}}},scales:{x:{stacked:true,min:0,max:100,ticks:{color:txtC,callback:v=>v+'%'},grid:{color:gridC}},y:{stacked:true,ticks:{color:txtC}}}}});
+  const gPct=[[2.7,24.9,32.1,40.3],[3.6,24.5,31.7,40.1],[3.5,27.6,31.7,37.2],[3.6,26.6,31.7,38.1]];
+  const gC=['#378ADD','#85B7EB','#1D9E75','#9FE1CB'];const gL=['5급','6급','7급','8~9급'];
+  mkStacked('c7b',COMP4,gL.map((g,gi)=>({label:g,data:COMP4.map((_,li)=>gPct[li][gi]),backgroundColor:gC[gi],stack:'a'})),180);
+  const LVL=['초등학교','중학교','고등학교','유치원','특수학교','각종학교'];
+  const LVC=['#185FA5','#378ADD','#85B7EB','#1D9E75','#9FE1CB','#BA7517'];
+  const lvPct=[[56.8,18.9,17.3,4.6,1.9,0.6],[53.1,22.8,17.4,3.5,2.6,0.7],[56.6,20.0,17.0,4.4,1.7,0.2],[55.4,21.0,17.1,4.1,2.0,0.4]];
+  mkLeg('leg7c',LVL,LVC);
+  mkStacked('c7c',COMP4,LVL.map((l,li)=>({label:l,data:COMP4.map((_,ci)=>lvPct[ci][li]),backgroundColor:LVC[li],stack:'a'})),200);
+  const LVS=['초등학교','중학교','고등학교','유치원','특수학교','각종학교'];
+  const ld=[[2.0,17.7,29.9,50.4],[3.9,39.3,38.8,18.0],[4.2,35.2,40.3,20.3],[1.1,24.1,32.2,42.5],[11.1,25.0,27.8,36.1],[0.0,9.1,18.2,72.7]];
+  mkLeg('leg7d',gL,gC);
+  mkStacked('c7d',LVS,gL.map((g,gi)=>({label:g,data:LVS.map((_,li)=>ld[li][gi]),backgroundColor:gC[gi],stack:'a'})),300);
+}
+
+/* ══ ⑧ 보고서 연계 ══ */
+function mkMini(id,cbData,siData,doData,natData){
+  dc(id);charts[id]=new Chart(document.getElementById(id),{type:'line',data:{labels:YC,datasets:[{label:'충북',data:cbData,borderColor:CB,fill:false,tension:.3,borderWidth:2.5,pointRadius:5,pointBackgroundColor:cbData.map(v=>v>=0?CB:'#E24B4A'),pointBorderColor:'transparent',datalabels:{color:ctx=>cbData[ctx.dataIndex]>=0?CB:'#E24B4A',font:{size:10,weight:'500'},anchor:ctx=>cbData[ctx.dataIndex]>=0?'end':'start',align:ctx=>cbData[ctx.dataIndex]>=0?'top':'bottom',formatter:v=>(v>0?'+':'')+v.toFixed(1)+'%'}},{label:'시',data:siData,borderColor:SI,fill:false,tension:.3,borderWidth:1.5,pointRadius:3,borderDash:[4,3],datalabels:{display:false}},{label:'도',data:doData,borderColor:DO_,fill:false,tension:.3,borderWidth:1.5,pointRadius:3,borderDash:[4,3],datalabels:{display:false}},{label:'전국',data:natData,borderColor:NAT,fill:false,tension:.3,borderWidth:1,pointRadius:2,borderDash:[2,4],datalabels:{display:false}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw!=null?(ctx.raw>0?'+':'')+ctx.raw.toFixed(1)+'%':''}`}}},scales:{x:{ticks:{color:txtC,font:{size:10}},grid:{display:false}},y:{ticks:{color:txtC,font:{size:10},callback:v=>v+'%'},grid:{color:gridC},afterDataLimits(a){a.max+=1;a.min-=1;}}}}});
+}
+function b7(){
+  dc('c8main');
+  const YEARS=['2020','2021','2022','2023','2024'];
+  charts['c8main']=new Chart(document.getElementById('c8main'),{type:'bar',data:{labels:YEARS,datasets:[{label:'각급학교',data:[1900,1907,1916,1913,1928],backgroundColor:'#9FE1CB',stack:'a',datalabels:{display:false}},{label:'교육지원청',data:[724,754,760,777,773],backgroundColor:'#378ADD',stack:'a',datalabels:{display:false}},{label:'직속기관',data:[355,357,380,372,350],backgroundColor:'#85B7EB',stack:'a',datalabels:{display:false}},{label:'본청',data:[349,381,396,390,420],backgroundColor:CB,stack:'a',datalabels:{display:false}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toLocaleString()}명`}}},scales:{x:{ticks:{color:txtC},grid:{display:false}},y:{stacked:true,ticks:{color:txtC,callback:v=>v.toLocaleString()},grid:{color:gridC}}}}});
+  mkMini('c8a',[9.2,3.9,-1.5,7.7],[5.0,5.4,2.2,2.5],[0.4,6.2,2.0,5.1],[2.6,5.8,2.1,3.8]);
+  mkMini('c8b',[4.1,0.8,2.2,-0.5],[1.9,0.7,4.5,4.1],[7.4,3.2,2.9,6.1],[6.1,2.6,3.2,5.7]);
+  mkMini('c8c',[0.6,6.4,-2.1,-5.9],[2.4,1.8,2.2,3.1],[0.2,4.1,1.9,-2.8],[1.3,2.9,2.1,0.2]);
+  mkMini('c8d',[0.4,0.5,-0.2,0.8],[0.4,0.6,-0.3,-0.6],[-0.5,1.1,0.4,-0.8],[-0.2,1.0,0.2,-0.7]);
+  const Y5=['2019','2020','2021','2022','2023'];
+  dc('c8e');charts['c8e']=new Chart(document.getElementById('c8e'),{type:'line',data:{labels:Y5,datasets:[{label:'행정기관 정원',data:[1394,1436,1502,1546,1549],borderColor:CB,fill:false,tension:.3,borderWidth:2.5,pointRadius:4,datalabels:{color:CB,font:{size:10,weight:'500'},anchor:'end',align:'top',formatter:v=>v.toLocaleString()}},{label:'행정기관 현원',data:[1349,1393,1478,1510,1530],borderColor:CB,fill:false,tension:.3,borderWidth:1.5,pointRadius:3,borderDash:[4,3],datalabels:{display:false}},{label:'학교 정원',data:[1911,1900,1907,1916,1913],borderColor:SI,fill:false,tension:.3,borderWidth:2.5,pointRadius:4,datalabels:{color:SI,font:{size:10,weight:'500'},anchor:'start',align:'bottom',formatter:v=>v.toLocaleString()}},{label:'학교 현원',data:[1733,1784,1804,1783,1794],borderColor:SI,fill:false,tension:.3,borderWidth:1.5,pointRadius:3,borderDash:[4,3],datalabels:{display:false}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toLocaleString()}명`}}},scales:{x:{ticks:{color:txtC,font:{size:10}},grid:{display:false}},y:{ticks:{color:txtC,callback:v=>v.toLocaleString()},grid:{color:gridC},min:1200,max:2100}}}});
+  const SC5C=['#534AB7','#185FA5','#1D9E75','#BA7517','#888780','#D85A30'];
+  dc('c8f');charts['c8f']=new Chart(document.getElementById('c8f'),{type:'line',data:{labels:Y5,datasets:[{label:'유치원',data:[76,79,82,86,86],borderColor:SC5C[0],fill:false,tension:.3,borderWidth:2,pointRadius:4,datalabels:{display:false}},{label:'초등학교',data:[1099,1100,1099,1090,1087],borderColor:SC5C[1],fill:false,tension:.3,borderWidth:2.5,pointRadius:4,datalabels:{color:SC5C[1],font:{size:9},anchor:'end',align:'top',formatter:v=>v.toLocaleString()}},{label:'중학교',data:[357,353,358,362,363],borderColor:SC5C[2],fill:false,tension:.3,borderWidth:2,pointRadius:4,datalabels:{display:false}},{label:'고등학교',data:[346,334,334,337,341],borderColor:SC5C[3],fill:false,tension:.3,borderWidth:2,pointRadius:4,datalabels:{display:false}},{label:'특수학교',data:[29,30,30,35,36],borderColor:SC5C[4],fill:false,tension:.3,borderWidth:1.5,pointRadius:3,datalabels:{display:false}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw}명`}}},scales:{x:{ticks:{color:txtC,font:{size:10}},grid:{display:false}},y:{ticks:{color:txtC,callback:v=>v.toLocaleString()},grid:{color:gridC}}}}});
+  const totals5=[3305,3336,3409,3462,3462];
+  const orgRaw=[[332,349,382,396,390],[356,355,356,380,372],[639,665,696,708,725],[59,59,58,52,52],[7,7,9,9,9],[1911,1900,1907,1916,1913]];
+  const orgN=['본청','직속기관','교육지원청','소속기관','의회','학교'];
+  const orgC8=['#042C53','#185FA5','#378ADD','#85B7EB','#1D9E75','#9FE1CB'];
+  dc('c8g');charts['c8g']=new Chart(document.getElementById('c8g'),{type:'bar',data:{labels:Y5,datasets:orgRaw.map((d,i)=>({label:orgN[i],data:d.map((v,yi)=>+(v/totals5[yi]*100).toFixed(1)),backgroundColor:orgC8[i],stack:'a',datalabels:{color:'#fff',font:{size:9,weight:'500'},anchor:'center',align:'center',formatter:v=>v>=8?v.toFixed(1)+'%':''}}))},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},datalabels:{},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`}}},scales:{x:{stacked:true,min:0,max:100,ticks:{color:txtC,font:{size:10},callback:v=>v+'%'},grid:{color:gridC}},y:{stacked:true,ticks:{color:txtC,font:{size:10}}}}}});
+}
+
+b0();rendered[0]=true;
+</script>
+</body>
+</html>
