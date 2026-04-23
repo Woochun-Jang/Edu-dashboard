@@ -247,8 +247,8 @@ canvas.pchart{width:100%;height:120px;background:#fafcff;display:block}
 <script>
 /* ── DATA ─────────────────────────────────────── */
 const SECTORS=[
-  {id:"all",label:"전체",icon:"◈",color:"#1a56db",rgb:"26,86,219",desc:"13개 전체 종목"},
-  {id:"defense",label:"방산·전지",icon:"🛡",color:"#c0392b",rgb:"192,57,43",desc:"비츠로셀 · 한화시스템"},
+  {id:"all",label:"전체",icon:"◈",color:"#1a56db",rgb:"26,86,219",desc:"42개 전체 종목"},
+  {id:"defense",label:"방산·전지",icon:"🛡",color:"#c0392b",rgb:"192,57,43",desc:"비츠로셀·한화시스템·퍼스텍·아이쓰리시스템·휴니드·현대로템"},
   {id:"nuclear",label:"원전·SMR",icon:"⚛",color:"#d35400",rgb:"211,84,0",desc:"두산에너빌리티"},
   {id:"energy",label:"에너지인프라",icon:"⚡",color:"#1565c0",rgb:"21,101,192",desc:"세아제강지주"},
   {id:"bio",label:"바이오·AI신약",icon:"🧬",color:"#0d7c4a",rgb:"13,124,74",desc:"토모큐브·프로티나·큐리오시스·큐리옥스"},
@@ -257,6 +257,14 @@ const SECTORS=[
   {id:"it",label:"IT·플랫폼",icon:"💻",color:"#37474f",rgb:"55,71,79",desc:"아이티센글로벌"},
   {id:"theme",label:"테마·투기",icon:"⚠️",color:"#b71c1c",rgb:"183,28,28",desc:"제이에스링크"},
   {id:"airline",label:"항공·물류",icon:"✈️",color:"#0277bd",rgb:"2,119,189",desc:"대한항공"},
+  {id:"semicon",label:"반도체",icon:"💾",color:"#6200ea",rgb:"98,0,234",desc:"삼성전자·SK하이닉스"},
+  {id:"shipbuilding",label:"조선·기자재",icon:"⚓",color:"#1b5e20",rgb:"27,94,32",desc:"동일스틸렉스·HD현대중공업·HJ중공업·케이프·한화엔진"},
+  {id:"renewable",label:"신재생에너지",icon:"🌱",color:"#2e7d32",rgb:"46,125,50",desc:"씨에스윈드·OCI·HD현대에너지솔루션·한화솔루션"},
+  {id:"aluminum",label:"알루미늄·소재",icon:"🔩",color:"#546e7a",rgb:"84,110,122",desc:"삼아알미늄·DI동일·조일알루미늄"},
+  {id:"battery",label:"2차전지",icon:"🔋",color:"#e65100",rgb:"230,81,0",desc:"삼성SDI·DS단석"},
+  {id:"power",label:"전력설비",icon:"🔌",color:"#f57f17",rgb:"245,127,23",desc:"가온전선·LS·LS ELECTRIC"},
+  {id:"pcb",label:"PCB·반도체소재",icon:"🖥",color:"#880e4f",rgb:"136,14,79",desc:"KEC·이수페타시스·LG이노텍·두산테스나·동진쎄미켐"},
+  {id:"space",label:"우주항공",icon:"🚀",color:"#0d47a1",rgb:"13,71,161",desc:"미래에셋벤처투자"},
 ];
 
 const CHART_DATA={
