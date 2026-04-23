@@ -47,6 +47,10 @@ STOCKS = {
     40: {"ticker": "131970.KQ", "name": "두산테스나"},
     41: {"ticker": "005290.KS", "name": "동진쎄미켐"},
     42: {"ticker": "002220.KS", "name": "미래에셋벤처투자"},
+    43: {"ticker": "237690.KQ", "name": "에스티팜"},
+    44: {"ticker": "010140.KS", "name": "삼성중공업"},
+    45: {"ticker": "298040.KS", "name": "효성중공업"},
+    46: {"ticker": "008770.KS", "name": "호텔신라"},
 }
 
 def fetch_price_data(ticker, period="1y"):
