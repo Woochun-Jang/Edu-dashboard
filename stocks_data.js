@@ -1,5 +1,5 @@
 // 자동 생성 파일 - 수동 수정 금지
-// 업데이트: 2026.04.24 07:21 KST
+// 업데이트: 2026.04.24 11:43 KST
 // 총 90개 종목
 
 const PRICE_DATA = {
@@ -252,7 +252,7 @@ const PRICE_DATA = {
     ],
     "current": 57200.0,
     "change_pct": 9.79,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "2": {
     "closes": [
@@ -502,7 +502,7 @@ const PRICE_DATA = {
     ],
     "current": 130400.0,
     "change_pct": 0.23,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "3": {
     "closes": [
@@ -752,7 +752,7 @@ const PRICE_DATA = {
     ],
     "current": 127100.0,
     "change_pct": 3.67,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "4": {
     "closes": [
@@ -1002,7 +1002,7 @@ const PRICE_DATA = {
     ],
     "current": 220000.0,
     "change_pct": 7.58,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "5": {
     "closes": [
@@ -1253,7 +1253,7 @@ const PRICE_DATA = {
     ],
     "current": 55300.0,
     "change_pct": 2.41,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "6": {
     "closes": [
@@ -1440,7 +1440,7 @@ const PRICE_DATA = {
     ],
     "current": 63700.0,
     "change_pct": 1.92,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "7": {
     "closes": [
@@ -1557,7 +1557,7 @@ const PRICE_DATA = {
     ],
     "current": 60100.0,
     "change_pct": 3.8,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "8": {
     "closes": [
@@ -1808,7 +1808,7 @@ const PRICE_DATA = {
     ],
     "current": 90600.0,
     "change_pct": -0.98,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "9": {
     "closes": [
@@ -1896,7 +1896,7 @@ const PRICE_DATA = {
     ],
     "current": 61000.0,
     "change_pct": 2.35,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "10": {
     "closes": [
@@ -2146,7 +2146,7 @@ const PRICE_DATA = {
     ],
     "current": 48300.0,
     "change_pct": 1.36,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "11": {
     "closes": [
@@ -2397,7 +2397,7 @@ const PRICE_DATA = {
     ],
     "current": 46250.0,
     "change_pct": -1.28,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "12": {
     "closes": [
@@ -2648,7 +2648,7 @@ const PRICE_DATA = {
     ],
     "current": 44000.0,
     "change_pct": -0.45,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "13": {
     "closes": [
@@ -2898,7 +2898,7 @@ const PRICE_DATA = {
     ],
     "current": 24850.0,
     "change_pct": 0.2,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "14": {
     "closes": [
@@ -3148,7 +3148,7 @@ const PRICE_DATA = {
     ],
     "current": 219500.0,
     "change_pct": -2.23,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "15": {
     "closes": [
@@ -3286,7 +3286,7 @@ const PRICE_DATA = {
       617418.0,
       615423.0,
       610436.0,
-      558569.0,
+      558568.0,
       604451.0,
       568543.0,
       560563.0,
@@ -3398,7 +3398,7 @@ const PRICE_DATA = {
     ],
     "current": 1222000.0,
     "change_pct": -0.24,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "16": {
     "closes": [
@@ -3647,7 +3647,7 @@ const PRICE_DATA = {
     ],
     "current": 1253.0,
     "change_pct": -10.75,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "17": {
     "closes": [
@@ -3897,7 +3897,7 @@ const PRICE_DATA = {
     ],
     "current": 671000.0,
     "change_pct": 4.68,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "18": {
     "closes": [
@@ -4147,7 +4147,7 @@ const PRICE_DATA = {
     ],
     "current": 32050.0,
     "change_pct": -1.84,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "19": {
     "closes": [
@@ -4398,7 +4398,7 @@ const PRICE_DATA = {
     ],
     "current": 16570.0,
     "change_pct": 5.01,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "20": {
     "closes": [
@@ -4647,7 +4647,7 @@ const PRICE_DATA = {
     ],
     "current": 70100.0,
     "change_pct": 3.85,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "21": {
     "closes": [
@@ -4897,7 +4897,7 @@ const PRICE_DATA = {
     ],
     "current": 73200.0,
     "change_pct": 6.4,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "22": {
     "closes": [
@@ -5147,7 +5147,7 @@ const PRICE_DATA = {
     ],
     "current": 384000.0,
     "change_pct": 19.25,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "23": {
     "closes": [
@@ -5397,7 +5397,7 @@ const PRICE_DATA = {
     ],
     "current": 191000.0,
     "change_pct": 6.29,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "24": {
     "closes": [
@@ -5647,7 +5647,7 @@ const PRICE_DATA = {
     ],
     "current": 49350.0,
     "change_pct": 5.45,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "25": {
     "closes": [
@@ -5897,7 +5897,7 @@ const PRICE_DATA = {
     ],
     "current": 70000.0,
     "change_pct": 4.79,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "26": {
     "closes": [
@@ -6147,7 +6147,7 @@ const PRICE_DATA = {
     ],
     "current": 32150.0,
     "change_pct": 5.76,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "28": {
     "closes": [
@@ -6397,7 +6397,7 @@ const PRICE_DATA = {
     ],
     "current": 641000.0,
     "change_pct": 1.75,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "29": {
     "closes": [
@@ -6647,7 +6647,7 @@ const PRICE_DATA = {
     ],
     "current": 25750.0,
     "change_pct": 0.98,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "30": {
     "closes": [
@@ -6896,7 +6896,7 @@ const PRICE_DATA = {
     ],
     "current": 145.0,
     "change_pct": 0.0,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "31": {
     "closes": [
@@ -7147,7 +7147,7 @@ const PRICE_DATA = {
     ],
     "current": 108400.0,
     "change_pct": 2.65,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "32": {
     "closes": [
@@ -7397,7 +7397,7 @@ const PRICE_DATA = {
     ],
     "current": 9980.0,
     "change_pct": 6.62,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "33": {
     "closes": [
@@ -7647,7 +7647,7 @@ const PRICE_DATA = {
     ],
     "current": 233000.0,
     "change_pct": -1.06,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "34": {
     "closes": [
@@ -7897,7 +7897,7 @@ const PRICE_DATA = {
     ],
     "current": 24750.0,
     "change_pct": -1.79,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "35": {
     "closes": [
@@ -8147,7 +8147,7 @@ const PRICE_DATA = {
     ],
     "current": 398500.0,
     "change_pct": 6.55,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "36": {
     "closes": [
@@ -8397,7 +8397,7 @@ const PRICE_DATA = {
     ],
     "current": 226500.0,
     "change_pct": 4.38,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "37": {
     "closes": [
@@ -8646,7 +8646,7 @@ const PRICE_DATA = {
     ],
     "current": 1601.0,
     "change_pct": -13.13,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "38": {
     "closes": [
@@ -8896,7 +8896,7 @@ const PRICE_DATA = {
     ],
     "current": 153400.0,
     "change_pct": 2.13,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "39": {
     "closes": [
@@ -9146,7 +9146,7 @@ const PRICE_DATA = {
     ],
     "current": 542000.0,
     "change_pct": 8.4,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "40": {
     "closes": [
@@ -9397,7 +9397,7 @@ const PRICE_DATA = {
     ],
     "current": 122400.0,
     "change_pct": -2.63,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "41": {
     "closes": [
@@ -9646,7 +9646,7 @@ const PRICE_DATA = {
     ],
     "current": 60300.0,
     "change_pct": -0.17,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "42": {
     "closes": [
@@ -9896,7 +9896,7 @@ const PRICE_DATA = {
     ],
     "current": 5400.0,
     "change_pct": 14.41,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "43": {
     "closes": [
@@ -10147,7 +10147,7 @@ const PRICE_DATA = {
     ],
     "current": 148000.0,
     "change_pct": 0.0,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "44": {
     "closes": [
@@ -10397,7 +10397,7 @@ const PRICE_DATA = {
     ],
     "current": 34400.0,
     "change_pct": 1.18,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "45": {
     "closes": [
@@ -10647,7 +10647,7 @@ const PRICE_DATA = {
     ],
     "current": 3552000.0,
     "change_pct": 8.69,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "46": {
     "closes": [
@@ -10897,7 +10897,7 @@ const PRICE_DATA = {
     ],
     "current": 62300.0,
     "change_pct": 9.88,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "47": {
     "closes": [
@@ -11147,7 +11147,7 @@ const PRICE_DATA = {
     ],
     "current": 42600.0,
     "change_pct": 0.71,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "48": {
     "closes": [
@@ -11397,7 +11397,7 @@ const PRICE_DATA = {
     ],
     "current": 85400.0,
     "change_pct": -2.84,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "49": {
     "closes": [
@@ -11648,7 +11648,7 @@ const PRICE_DATA = {
     ],
     "current": 22950.0,
     "change_pct": -0.43,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "50": {
     "closes": [
@@ -11898,7 +11898,7 @@ const PRICE_DATA = {
     ],
     "current": 71100.0,
     "change_pct": 1.86,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:42"
   },
   "51": {
     "closes": [
@@ -12149,7 +12149,7 @@ const PRICE_DATA = {
     ],
     "current": 89800.0,
     "change_pct": -0.77,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "52": {
     "closes": [
@@ -12399,7 +12399,7 @@ const PRICE_DATA = {
     ],
     "current": 1463000.0,
     "change_pct": 2.67,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "53": {
     "closes": [
@@ -12649,7 +12649,7 @@ const PRICE_DATA = {
     ],
     "current": 16740.0,
     "change_pct": 11.74,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "54": {
     "closes": [
@@ -12760,7 +12760,7 @@ const PRICE_DATA = {
     ],
     "current": 20000.0,
     "change_pct": -0.25,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "55": {
     "closes": [
@@ -13011,7 +13011,7 @@ const PRICE_DATA = {
     ],
     "current": 7080.0,
     "change_pct": -1.67,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "56": {
     "closes": [
@@ -13104,7 +13104,7 @@ const PRICE_DATA = {
     ],
     "current": 35300.0,
     "change_pct": -0.98,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "57": {
     "closes": [
@@ -13354,7 +13354,7 @@ const PRICE_DATA = {
     ],
     "current": 171400.0,
     "change_pct": -6.08,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "58": {
     "closes": [
@@ -13604,7 +13604,7 @@ const PRICE_DATA = {
     ],
     "current": 989000.0,
     "change_pct": 2.38,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "59": {
     "closes": [
@@ -13855,7 +13855,7 @@ const PRICE_DATA = {
     ],
     "current": 17170.0,
     "change_pct": 0.59,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "60": {
     "closes": [
@@ -14105,7 +14105,7 @@ const PRICE_DATA = {
     ],
     "current": 14830.0,
     "change_pct": 1.02,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "61": {
     "closes": [
@@ -14356,7 +14356,7 @@ const PRICE_DATA = {
     ],
     "current": 130400.0,
     "change_pct": -3.19,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "62": {
     "closes": [
@@ -14607,7 +14607,7 @@ const PRICE_DATA = {
     ],
     "current": 21450.0,
     "change_pct": 4.13,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "63": {
     "closes": [
@@ -14858,7 +14858,7 @@ const PRICE_DATA = {
     ],
     "current": 30300.0,
     "change_pct": 1.85,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "64": {
     "closes": [
@@ -15109,7 +15109,7 @@ const PRICE_DATA = {
     ],
     "current": 292500.0,
     "change_pct": 9.55,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "65": {
     "closes": [
@@ -15148,8 +15148,8 @@ const PRICE_DATA = {
       280745.0,
       281237.0,
       294512.0,
-      288120.0,
-      286645.0,
+      288121.0,
+      286646.0,
       275829.0,
       280254.0,
       292546.0,
@@ -15171,7 +15171,7 @@ const PRICE_DATA = {
       302379.0,
       297954.0,
       294021.0,
-      288120.0,
+      288121.0,
       294021.0,
       291071.0,
       292546.0,
@@ -15359,7 +15359,7 @@ const PRICE_DATA = {
     ],
     "current": 422500.0,
     "change_pct": -4.52,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "66": {
     "closes": [
@@ -15609,7 +15609,7 @@ const PRICE_DATA = {
     ],
     "current": 53000.0,
     "change_pct": -0.75,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "67": {
     "closes": [
@@ -15859,7 +15859,7 @@ const PRICE_DATA = {
     ],
     "current": 42100.0,
     "change_pct": 3.69,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "69": {
     "closes": [
@@ -16108,7 +16108,7 @@ const PRICE_DATA = {
     ],
     "current": 69900.0,
     "change_pct": 4.8,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "70": {
     "closes": [
@@ -16359,7 +16359,7 @@ const PRICE_DATA = {
     ],
     "current": 118900.0,
     "change_pct": 4.48,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "71": {
     "closes": [
@@ -16610,7 +16610,7 @@ const PRICE_DATA = {
     ],
     "current": 64700.0,
     "change_pct": -0.46,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "72": {
     "closes": [
@@ -16861,7 +16861,7 @@ const PRICE_DATA = {
     ],
     "current": 14110.0,
     "change_pct": 3.9,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "73": {
     "closes": [
@@ -17110,7 +17110,7 @@ const PRICE_DATA = {
     ],
     "current": 7350.0,
     "change_pct": -2.91,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "74": {
     "closes": [
@@ -17361,7 +17361,7 @@ const PRICE_DATA = {
     ],
     "current": 6170.0,
     "change_pct": 2.66,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "77": {
     "closes": [
@@ -17611,7 +17611,7 @@ const PRICE_DATA = {
     ],
     "current": 31700.0,
     "change_pct": -0.63,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "78": {
     "closes": [
@@ -17862,7 +17862,7 @@ const PRICE_DATA = {
     ],
     "current": 612000.0,
     "change_pct": 2.0,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "79": {
     "closes": [
@@ -18112,7 +18112,7 @@ const PRICE_DATA = {
     ],
     "current": 94100.0,
     "change_pct": 2.17,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "80": {
     "closes": [
@@ -18361,7 +18361,7 @@ const PRICE_DATA = {
     ],
     "current": 13250.0,
     "change_pct": 17.05,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "81": {
     "closes": [
@@ -18612,7 +18612,7 @@ const PRICE_DATA = {
     ],
     "current": 97000.0,
     "change_pct": 1.57,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "84": {
     "closes": [
@@ -18863,7 +18863,7 @@ const PRICE_DATA = {
     ],
     "current": 25850.0,
     "change_pct": 5.94,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "85": {
     "closes": [
@@ -19114,7 +19114,7 @@ const PRICE_DATA = {
     ],
     "current": 17510.0,
     "change_pct": 3.24,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "86": {
     "closes": [
@@ -19364,7 +19364,7 @@ const PRICE_DATA = {
     ],
     "current": 31850.0,
     "change_pct": 7.97,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "87": {
     "closes": [
@@ -19615,7 +19615,7 @@ const PRICE_DATA = {
     ],
     "current": 16910.0,
     "change_pct": 5.49,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "88": {
     "closes": [
@@ -19866,7 +19866,7 @@ const PRICE_DATA = {
     ],
     "current": 42300.0,
     "change_pct": 29.95,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "89": {
     "closes": [
@@ -20117,7 +20117,7 @@ const PRICE_DATA = {
     ],
     "current": 16920.0,
     "change_pct": 8.67,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "90": {
     "closes": [
@@ -20368,7 +20368,7 @@ const PRICE_DATA = {
     ],
     "current": 37900.0,
     "change_pct": 0.0,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "92": {
     "closes": [
@@ -20617,7 +20617,7 @@ const PRICE_DATA = {
     ],
     "current": 16240.0,
     "change_pct": 0.31,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "93": {
     "closes": [
@@ -20866,7 +20866,7 @@ const PRICE_DATA = {
     ],
     "current": 8200.0,
     "change_pct": 0.0,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "94": {
     "closes": [
@@ -21116,7 +21116,7 @@ const PRICE_DATA = {
     ],
     "current": 105400.0,
     "change_pct": 1.93,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "95": {
     "closes": [
@@ -21366,7 +21366,7 @@ const PRICE_DATA = {
     ],
     "current": 381500.0,
     "change_pct": 1.6,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "96": {
     "closes": [
@@ -21616,7 +21616,7 @@ const PRICE_DATA = {
     ],
     "current": 143900.0,
     "change_pct": 8.85,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   },
   "97": {
     "closes": [
@@ -21866,6 +21866,6 @@ const PRICE_DATA = {
     ],
     "current": 8080.0,
     "change_pct": 0.62,
-    "updated": "2026.04.24 07:21"
+    "updated": "2026.04.24 11:43"
   }
 };
