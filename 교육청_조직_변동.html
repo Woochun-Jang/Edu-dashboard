@@ -205,6 +205,7 @@ td.tc.no_data::after{content:'—'}
       <option value="30" selected>상위 30개</option>
       <option value="40">상위 40개</option>
       <option value="50">상위 50개</option>
+      <option value="all">전체</option>
     </select>
     <div class="stat" id="tm-stat"></div>
   </div>
@@ -227,6 +228,7 @@ td.tc.no_data::after{content:'—'}
       <option value="30">상위 30개</option>
       <option value="40">상위 40개</option>
       <option value="50" selected>상위 50개</option>
+      <option value="all">전체</option>
     </select>
     <div class="stat" id="wc-stat"></div>
   </div>
@@ -252,6 +254,7 @@ td.tc.no_data::after{content:'—'}
       <option value="30" selected>상위 30개</option>
       <option value="40">상위 40개</option>
       <option value="50">상위 50개</option>
+      <option value="all">전체</option>
     </select>
     <div class="stat" id="hm-stat"></div>
   </div>
@@ -285,6 +288,7 @@ td.tc.no_data::after{content:'—'}
       <option value="30" selected>상위 30개</option>
       <option value="40">상위 40개</option>
       <option value="50">상위 50개</option>
+      <option value="all">전체</option>
     </select>
     <div class="stat" id="bar-stat"></div>
   </div>
@@ -539,11 +543,13 @@ function drawTM(){
 /* ══ 워드클라우드 (Canvas 기반 - 빠짐없이 전체 표시) ══ */
 function drawWC(){
   const yr=document.getElementById('wc-yr').value;
-  const topN=parseInt(document.getElementById('wc-top').value);
+  const topNRaw=document.getElementById('wc-top').value;
   const mv=curV;
   const raw=TM[yr]||{};
-  const items=Object.entries(raw).filter(([,v])=>v>=mv).sort((a,b)=>b[1]-a[1]).slice(0,topN);
-  document.getElementById('wc-stat').innerHTML=`<strong>${items.length}개</strong> 부서명 (전체 ${Object.keys(raw).filter(k=>raw[k]>=mv).length}개 중 상위 ${topN}개)`;
+  const allWcItems=Object.entries(raw).filter(([,v])=>v>=mv).sort((a,b)=>b[1]-a[1]);
+  const items=topNRaw==='all'?allWcItems:allWcItems.slice(0,parseInt(topNRaw));
+  const topLabel=topNRaw==='all'?'전체':`상위 ${topNRaw}개`;
+  document.getElementById('wc-stat').innerHTML=`<strong>${items.length}개</strong> 부서명 (${topLabel} 표시)`;
 
   const wrap=document.getElementById('wc-wrap');
   const old=document.getElementById('wc-cv');
@@ -642,7 +648,7 @@ function drawWC(){
 /* ══ 히트맵 ══ */
 function drawHM(){
   const sort=document.getElementById('hm-sort').value;
-  const topN=parseInt(document.getElementById('hm-top').value);
+  const topNRawHm=document.getElementById('hm-top').value;
   const mv=curV;
   // 전체 누적 기준으로 정렬 후 상위 N개 선택
   const tots={};
@@ -651,13 +657,13 @@ function drawHM(){
   if(sort==='total')allDepts.sort((a,b)=>tots[b]-tots[a]);
   else if(sort==='name')allDepts.sort((a,b)=>a.localeCompare(b,'ko'));
   else allDepts.sort((a,b)=>((TM[sort]&&TM[sort][b])||0)-((TM[sort]&&TM[sort][a])||0));
-  const depts=allDepts.slice(0,topN);
-  const excl=allDepts.slice(topN);
+  const depts=topNRawHm==='all'?allDepts:allDepts.slice(0,parseInt(topNRawHm));
+  const excl=topNRawHm==='all'?[]:allDepts.slice(parseInt(topNRawHm));
   // excl box
   const exBox=document.getElementById('hm-excl');
   if(excl.length){
     exBox.style.display='block';
-    document.getElementById('hm-excl-t').textContent=`미표시 (${excl.length}개 — 빈도 ${mv} 이상이지만 상위 ${topN}개 초과)`;
+    document.getElementById('hm-excl-t').textContent=`미표시 (${excl.length}개 — 빈도 ${mv} 이상이지만 상위 ${topNRawHm}개 초과)`;
     const et=document.getElementById('hm-excl-tags');et.innerHTML='';
     excl.forEach(n=>{const t=document.createElement('span');t.className='etag';t.textContent=n;et.appendChild(t)});
   }else exBox.style.display='none';
