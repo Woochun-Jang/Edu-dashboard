@@ -1,5 +1,5 @@
 // AUTO-GENERATED — DO NOT EDIT MANUALLY
-// Updated: 2026-10-13 01:52:52 KST
+// Updated: 2026-10-14 00:11:21 KST
 // Source: Yahoo Finance via yfinance
 // chart_module.js 에서 PRICE_DATA[stockId].code 로 TradingView 링크 생성
 
@@ -15,7 +15,7 @@ const PRICE_DATA = {
     "chgPct":    -3.09,
     "h52":       166700,
     "l52":       55400,
-    "updatedAt": "2026.10.13 01:52"
+    "updatedAt": "2026.10.14 00:11"
   },
   "29": {
     "code":      "112610",
@@ -28,6 +28,6 @@ const PRICE_DATA = {
     "chgPct":    -2.62,
     "h52":       76900,
     "l52":       35050,
-    "updatedAt": "2026.10.13 01:52"
+    "updatedAt": "2026.10.14 00:11"
   }
 };
